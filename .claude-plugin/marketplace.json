@@ -1,0 +1,20 @@
+{
+  "name": "lawson-design",
+  "owner": {
+    "name": "Chad Lawson",
+    "url": "https://github.com/AngryMunky"
+  },
+  "metadata": {
+    "description": "Lawson Design internal Claude Code plugins.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "five-bot",
+      "source": "./five-bot",
+      "description": "Five-Bot software development workflow: Product, UX, Architect, Developer, and QA roles that hand off through Markdown and stop at human approval gates.",
+      "version": "1.1.0",
+      "category": "workflow"
+    }
+  ]
+}

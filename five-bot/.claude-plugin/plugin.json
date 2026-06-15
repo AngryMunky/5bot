@@ -1,0 +1,9 @@
+{
+  "name": "five-bot",
+  "version": "1.1.0",
+  "description": "A disciplined Product -> UX -> Architect -> Developer -> QA workflow. Each role is a slash command that reads shared Markdown state, produces one artifact, and stops at human approval gates.",
+  "author": {
+    "name": "Chad Lawson"
+  },
+  "repository": "https://github.com/AngryMunky/5bot-plugin"
+}
