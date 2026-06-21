@@ -1,4 +1,4 @@
-# The Five-Bot Framework (v1.1.0)
+# The 5bot Framework (v1.2.1)
 
 A disciplined way to take a software idea from rough concept to tested implementation using a small team of single-purpose AI roles, with a human as the final decision-maker. The whole system runs on plain Markdown files, so it is portable across tools and easy to read, edit, and version-control.
 
@@ -6,9 +6,163 @@ This guide is self-contained. Hand it to anyone; they can stand up the same work
 
 ---
 
+## What is 5bot?
+
+**5bot** is a Claude Code plugin that automates the 5-bot software development workflow. Instead of freestyle conversations, each role (Product, UX, Architect, Dev, QA) is a slash command that:
+- Reads shared Markdown project state
+- Performs its specific task
+- Produces a concrete artifact (spec, design, architecture, code, review)
+- Stops at a human approval gate
+
+**Perfect for:**
+- Indie developers and small teams (1–10 people) who want structured development without ceremony
+- Projects that need clear scope boundaries and decision audit trails
+- Teams working across multiple AI chat sessions (all state lives in git-friendly Markdown)
+- Reducing decision debt and scope creep
+
+**Install in Claude Code:**
+```
+/plugin marketplace add AngryMunky/5bot-plugin
+/plugin install 5bot@lawson-design
+```
+
+Then in any project folder, run:
+```
+/5bot-init
+/product
+```
+
+to start the workflow.
+
+---
+
+## Key concepts (jargon explained)
+
+**Canon** — The single source of truth. In 5bot, `project-state.md` is the canon. All other files reference it, never the reverse. This prevents conflicting versions of the truth floating around.
+
+**Artifact** — A concrete output from a bot. Not a vague chat. Examples: a written spec (product.md), a design doc (ux.md), a build plan (architecture.md), working code, a review report. Each bot must produce one.
+
+**Handoff** — A transient summary file that says "what just happened, what's next, who should read what." It's overwritten every stage; it's never permanent state. Think of it as sticky notes, not the filing cabinet.
+
+**Gate** — A human decision point. After Product+UX, after Architect, and after all QA work, the human reviews and approves (or rejects) before the next stage runs. This prevents silent scope creep.
+
+**Bot** — An AI role (Product, UX, Architect, Dev, QA). Each bot is a slash command. Each reads shared state, does its job, and stops at a gate. No wandering off scope.
+
+**Persona** — The instructions that tell a bot how to think and what to do. Each bot has a persona file that explains its job, constraints, and how to read/update the shared state.
+
+**Scope** — What's in the MVP (must build now) vs. out of scope (later, or never). The Product Bot defines scope; no other bot can expand it without human approval. This prevents feature creep.
+
+**Anti-drift rules** — Ten rules that keep bots honest. Rule #1: stay in your lane. Rule #2: no scope changes without recorded human approval. Rule #9: never skip a human gate. These enforce discipline.
+
+**MVP** — Minimum Viable Product. The smallest set of features that solves the core problem for the target users. Everything else is "later" or "never."
+
+---
+
 ## The idea in one paragraph
 
 Five "bots" run in sequence, each doing exactly one job: a **Product Bot** defines what's being built, a **UX Bot** designs how users move through it, a **Technical Architect Bot** plans the build, a **Developer Bot** writes the code one ticket at a time, and a **Reviewer / QA Bot** checks the work. The bots share state through a handful of Markdown files instead of long conversations, which keeps each one focused and keeps token use low. A human approves at three gates. No bot is allowed to wander outside its role or quietly change a settled decision.
+
+---
+
+## The bot hierarchy and commands
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 Human starts here                        │
+│              /product [describe idea]                    │
+└──────────────────────┬──────────────────────────────────┘
+                       ↓
+           ┌───────────────────────────┐
+           │  🤖 Product Bot           │
+           │  /product                 │
+           │  ↓ produces: product.md   │
+           └───────────────┬───────────┘
+                           ↓
+                  ┌─────────────────┐
+                  │ 🚪 GATE 1       │
+                  │ /gate           │
+                  │ Human approves  │
+                  │ scope & MVP     │
+                  └────────┬────────┘
+                           ↓
+           ┌───────────────────────────┐
+           │  🤖 UX Bot               │
+           │  /ux                      │
+           │  ↓ produces: ux.md        │
+           └───────────────┬───────────┘
+                           ↓
+                  ┌─────────────────┐
+                  │ 🚪 GATE 2       │
+                  │ /gate           │
+                  │ Human approves  │
+                  │ flows & design  │
+                  └────────┬────────┘
+                           ↓
+           ┌───────────────────────────┐
+           │  🤖 Architect Bot         │
+           │  /architect               │
+           │  ↓ produces:              │
+           │    architecture.md        │
+           │    dev-qa.md (tickets)    │
+           └───────────────┬───────────┘
+                           ↓
+                  ┌─────────────────┐
+                  │ 🚪 GATE 3       │
+                  │ /gate           │
+                  │ Human approves  │
+                  │ stack & plan    │
+                  └────────┬────────┘
+                           ↓
+           ┌───────────────────────────┐
+           │  🤖 Developer Bot         │
+           │  /dev [ticket T1]         │
+           │  ↓ produces: code +       │
+           │    dev notes              │
+           └───────────────┬───────────┘
+                           ↓
+           ┌───────────────────────────┐
+           │  🤖 QA Bot               │
+           │  /qa [review verdict]     │
+           │  ↓ produces: review notes │
+           │    + bug list             │
+           └───────────────┬───────────┘
+                           ↓
+              (repeats dev+qa for next ticket)
+                           ↓
+                  ┌─────────────────┐
+                  │ 🚪 GATE 4       │
+                  │ /gate           │
+                  │ Human approves  │
+                  │ all work        │
+                  └────────┬────────┘
+                           ↓
+                    Release! 🚀
+```
+
+**Key insight:** Each bot does exactly one job and stops. No scope creep, no silent decisions.
+
+---
+
+## The eight slash commands
+
+| Command | Bot | Job | Reads | Produces |
+|---------|-----|-----|-------|----------|
+| `/5bot-init` | Setup | Copy templates and scaffold the project | — | `project-state.md`, `decisions.md`, `handoff.md`, `product.md`, `ux.md`, `architecture.md`, `dev-qa.md` |
+| `/product` | Product Bot | Define what's being built: problem, users, scope, MVP, roadmap | `project-state.md` | `product.md` |
+| `/ux` | UX Bot | Design how users move through it: flows, screens, forms, states | `product.md`, `project-state.md` | `ux.md` |
+| `/architect` | Architect Bot | Plan the build: stack, data model, API, and break into tickets | `product.md`, `ux.md`, `project-state.md` | `architecture.md`, `dev-qa.md` (backlog) |
+| `/dev` | Developer Bot | Implement one ticket per run; document changes | `architecture.md`, `dev-qa.md`, ticket files | Code + `dev-qa.md` (dev notes) |
+| `/qa` | QA Bot | Review work against acceptance criteria; find bugs; return verdict | Ticket + code changes + `dev-qa.md` | `dev-qa.md` (review notes, bug list) |
+| `/handoff` | Bookkeeper | Update state files after each stage: what changed, what's next, active ticket | Current stage files | `handoff.md` (transient), `project-state.md`, `decisions.md` |
+| `/gate` | Human | Review stage summary; approve, request changes, or reject. Record decision. | `project-state.md`, `handoff.md`, relevant artifacts | `decisions.md` (approval block), `project-state.md` (new stage) |
+
+**Workflow pattern:**
+1. Run a bot command (e.g., `/product "build a todo app"`)
+2. It reads shared state, does its job, produces an artifact
+3. Run `/handoff` to update state files
+4. Run `/gate` to request human approval (unless it's Dev→QA, which auto-loops)
+5. If approved, continue to the next bot
+6. Repeat until shipped
 
 ---
 
@@ -36,24 +190,29 @@ Each stage produces a concrete artifact — a file, a spec, a set of tickets, a 
 
 ---
 
-## The shared files
+## The shared files (where state lives)
 
-State lives in seven Markdown files per project. Three are shared across all stages; four hold the detailed work.
+All state is stored in seven Markdown files per project. These are the "filing cabinet" for the project — your source of truth, decision log, and work tracker rolled into one, all in plain text (easy to version in git).
 
-**Shared (read by every bot):**
+**Shared files (read by every bot before it acts):**
 
-- `project-state.md` — the canon. Short. Every bot reads it first. Holds the current truth: concept, target users, current stage, approved MVP, active ticket, major decisions, open questions, risks.
-- `decisions.md` — the log of settled decisions and human-gate approvals, so nothing gets silently reversed.
-- `handoff.md` — transient. What just changed and what the next bot should do. Overwritten each stage. Never duplicates state.
+- **`project-state.md`** — **The canon.** This is THE source of truth. Every bot reads it first. It's kept short and holds only the current facts: what are we building, who is it for, what stage are we in, what's the MVP, which ticket is active now, what major decisions have we made, what are the open questions, what are the risks. When in doubt, read this file.
 
-**Stage files (detailed work):**
+- **`decisions.md`** — The decision log. Every human-gate approval is recorded here (what was approved, by whom, on what date, any conditions). Also records major technical decisions. This prevents "wait, did we approve that?" arguments later.
 
-- `product.md` — product brief, requirements, MVP, roadmap.
-- `ux.md` — flows, screens, interactions, states.
-- `architecture.md` — stack, data model, API, plan, tickets.
-- `dev-qa.md` — backlog, developer notes, review notes, bug list, release checklist.
+- **`handoff.md`** — The transient sticky note. Overwritten every stage. Says "we just did X, we produced Y, Z is the next step." Never contains permanent state. Think of it like a post-it note on the filing cabinet, not a file in it.
 
-The golden rule: a fact lives in one place. Detail belongs in the stage files; the canon stays short.
+**Stage files (the detailed work):**
+
+- **`product.md`** — The product brief. Problem statement, target users, requirements, MVP feature list, what's explicitly out of scope, roadmap, risks.
+
+- **`ux.md`** — The design spec. User flows, screen list, navigation model, form fields, empty/error/success states, interaction details. Can include a link to a visual mock-up, but the Markdown is the real spec.
+
+- **`architecture.md`** — The build plan. Tech stack, data model, API design, auth plan, system architecture, and the ticket breakdown (what gets built in what order).
+
+- **`dev-qa.md`** — The work tracker. Backlog of tickets, developer notes (what was built per ticket), QA review notes (bugs found, verdict), and release checklist.
+
+**The golden rule:** A fact lives in exactly one place. If it's permanent state (scope, decision, design), it goes in the stage files or canon. If it's "what just changed," it goes in the handoff and then gets incorporated into the canon. This prevents conflicting versions of the truth.
 
 ---
 
@@ -69,20 +228,29 @@ The Developer → QA loop runs without a human gate; QA may bounce obvious fixes
 
 ---
 
-## The anti-drift rules
+## The anti-drift rules (discipline without overhead)
 
-These keep the bots honest. Every bot follows all of them.
+These ten rules keep the bots (and humans) honest. They prevent scope creep, silent decisions, and wasted work. Every role—Product, UX, Architect, Dev, QA, and Human—follows all of them.
 
-1. Stay in your lane. If a task belongs to another bot, leave a note — don't take it over.
-2. No new MVP features, scope changes, or reversed decisions without recorded human approval.
-3. Always read `project-state.md` before acting. Never ignore prior risks or open questions.
-4. Mark assumptions and open questions explicitly. Never treat an assumption as fact.
-5. Produce concrete artifacts, not vague conversation.
-6. Never invent integrations, APIs, services, or credentials.
-7. Never mark work done without stating what changed and updating the handoff.
-8. Never approve incomplete or untested work.
-9. Never proceed past a human gate without recorded approval (Dev → QA is the only exception).
-10. Keep the shared files current automatically — bookkeeping is not optional.
+1. **Stay in your lane.** If a task belongs to another bot's job, flag it but don't do it. Product Bot doesn't design screens. UX Bot doesn't pick the tech stack. Dev Bot doesn't change architecture.
+
+2. **No scope changes without recorded human approval.** Can't add a feature to the MVP. Can't remove one. Can't reverse a prior decision. Everything goes through a gate.
+
+3. **Always read `project-state.md` before acting.** It's the canon. Never ignore what it says about current stage, approved MVP, active ticket, or known risks.
+
+4. **Mark assumptions and open questions explicitly.** Don't treat a guess as a fact. Write "ASSUMPTION: users have fast internet" or "OPEN QUESTION: should we support mobile?" so the next person knows it's unsettled.
+
+5. **Produce concrete artifacts, not vague conversation.** A spec file, not "sounds good." A design doc, not "I think we should." A review verdict, not "seems OK." Artifacts are reviewable and versionable.
+
+6. **Never invent integrations, APIs, services, or credentials.** Don't assume Stripe exists or that we have AWS access. If it's needed, the human approves it at a gate; then it gets added to scope and architecture.
+
+7. **Never mark work done without stating what changed and updating the handoff.** The next bot needs to know: what files did you touch? what's the verdict? what should they read? Write it down.
+
+8. **Never approve incomplete or untested work.** QA doesn't say "APPROVED" for code that doesn't run. Dev doesn't say a ticket is done if it doesn't match acceptance criteria.
+
+9. **Never proceed past a human gate without recorded approval.** The human reviews, approves or rejects, and the decision gets logged in `decisions.md`. The only exception: Dev → QA loops without a gate (QA can auto-bounce obvious fixes back to Dev once).
+
+10. **Keep the shared files current automatically.** Don't ask. It's not optional. After each stage, `project-state.md`, `decisions.md`, and `handoff.md` must be updated to reflect the new truth.
 
 ---
 
@@ -124,4 +292,14 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ---
 
-*Five-Bot Framework v1.1.0. Built on Markdown so it outlives any single tool.*
+---
+
+## Recent improvements (v1.2.1)
+
+- **⚠️ Handoff warning:** Template warns users that `handoff.md` is transient and overwritten each stage
+- **"Canon" definition:** Template clarifies that `project-state.md` is the single source of truth
+- **Command rule summaries:** All 8 commands now explain their scope and anti-drift rules upfront
+
+---
+
+*5bot Framework v1.2.1. Built on Markdown so it outlives any single tool.*
