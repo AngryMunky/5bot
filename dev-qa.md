@@ -1,4 +1,4 @@
-# Dev & QA (v1.3.0)
+# Dev & QA (v2.0.0)
 
 ## Backlog / Tickets
 
@@ -109,7 +109,7 @@
 
 ---
 
-## v1.3.0 Backlog — Pipeline Awareness & Guardrails
+## v2.0.0 Backlog — Pipeline Awareness & Guardrails (dev cycle tracked as "v1.3.0")
 
 > Sequential build: **T6 → T7 → T8 → T9** (shared files: SKILL.md, handoff.md, gate.md). Canonical edits in `plugins/five-bot/`; sync guidance into `_framework/5bot/`. See `architecture.md` → "v1.3.0".
 

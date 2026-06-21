@@ -1,4 +1,4 @@
-# UX (v1.3.0 — Pipeline Awareness & Guardrails)
+# UX (v2.0.0 — Pipeline Awareness & Guardrails)
 
 > Supersedes the v1.2.0 UX audit (in git history) for the v1.3.0 work. Canonical UX artifact the Architect reads. Designs the experience for the three approved features: **F1** context-health reminder, **F2** `/5bot-status` command, **F3** next-command footer. T5 (stage-lock) is research only — hook notes for the Architect are at the end.
 

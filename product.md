@@ -1,4 +1,4 @@
-# Product (v1.3.0 proposed · shipped baseline v1.2.1)
+# Product (v2.0.0 · shipped baseline v1.2.1)
 
 ## Product Name
 

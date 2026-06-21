@@ -1,4 +1,4 @@
-# Project State (v1.2.1)
+# Project State (v2.0.0)
 
 > Canon. Every bot reads this first. Keep it short — detail lives in the stage files.
 
@@ -16,7 +16,7 @@ Individual developers and small teams (1–10 people) using Claude Code. Indie h
 
 ## Current Stage
 
-Releasing v1.3.0 (final gate APPROVED; local edits + version bump done; staging-branch push pending authorization)
+Releasing v2.0.0 — staged on branch `v1.3.0-staging`; pending merge to `main`. Repo is now PRIVATE (synced via claude.ai "Sync from GitHub").
 
 ## Approved MVP Features (v1.2.0)
 
@@ -52,9 +52,9 @@ Claude Code plugin architecture
 
 ## Current Active Ticket
 
-**T9 (release) in progress.** T6/T7/T8 implemented + QA-APPROVED. Local edits done (plugin.json → 1.3.0, README, root CLAUDE, MEMORY). Remaining: staging-branch push → install-verify → merge to `main`. Also pending: T4 (v1.2.2 backlog), T5 (gate-enforcement research).
+**T9 (release) in progress — v2.0.0.** T6/T7/T8 implemented + QA-APPROVED. Re-stamped 1.3.0 → 2.0.0 (breaking `five-bot` → `5bot` install rename). Remaining: merge `v1.3.0-staging` → `main`, tag v2.0.0. Also pending: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
 
-**Deployment note:** Updating the source of the currently-installed 5bot plugin. Post-build, stage v1.3.0 on a non-default ("hidden") branch and install from it to verify before merging to `main` (folded into T9).
+**Deployment note:** Repo `AngryMunky/5bot-plugin` is now **PRIVATE** (flipped today) so it appears in claude.ai's "Sync from GitHub" plugin dialog. That dialog syncs `main`, so live verification likely happens **after** merge (re-sync), not from the staging branch. Install id is now `5bot@lawson-design`.
 
 ## Major Decisions (Product / UX / Technical)
 
@@ -92,4 +92,4 @@ See `product.md` for mitigation strategies.
 
 ## Last Updated / By
 
-2026-06-21 / Final gate APPROVED → T9 release in progress (staging push pending authorization)
+2026-06-21 / Re-stamped to v2.0.0 (5bot rename); staging ready, merge to `main` pending authorization

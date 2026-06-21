@@ -1,6 +1,6 @@
 # 5bot - Disciplined AI Software Development Workflow
 
-**Version 1.3.0** | [Full documentation](five-bot/README.md)
+**Version 2.0.0** | [Full documentation](five-bot/README.md)
 
 A Claude Code plugin that brings structure and discipline to software development using five single-purpose AI roles with human approval gates. The whole system runs on plain Markdown, so it's portable, version-control friendly, and easy to audit.
 
@@ -86,7 +86,7 @@ All project state lives in seven Markdown files (git-friendly, versionable):
 
 ## Key features
 
-✨ **v1.3.0 — Pipeline Awareness & Guardrails:**
+✨ **v2.0.0 — Pipeline Awareness & Guardrails:**
 - 🧭 `/5bot-status`: read-only snapshot to re-orient after a compaction, fresh session, or time away
 - 💾 Context-health reminder: after a long session, nudges you to `/compact` — reassuring that all canon is on disk, so nothing is lost
 - ➡️ Next-command footer: `/handoff` and `/gate` always name the exact next command
@@ -113,4 +113,4 @@ See [`five-bot/README.md`](five-bot/README.md) for:
 
 ---
 
-*Built on Markdown so it outlives any single tool. v1.3.0*
+*Built on Markdown so it outlives any single tool. v2.0.0*

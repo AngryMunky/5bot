@@ -1,4 +1,4 @@
-# Architecture (v1.3.0 · v1.2.1 record retained below)
+# Architecture (v2.0.0 · v1.2.1 record retained below)
 
 ## Tech Stack
 
@@ -87,7 +87,9 @@ User project
 
 ---
 
-# v1.3.0 — Pipeline Awareness & Guardrails (current)
+# v2.0.0 — Pipeline Awareness & Guardrails (current)
+
+> Renumbered from v1.3.0 to **v2.0.0** at release: completing the `five-bot` → `5bot` install rename is a breaking change (existing `five-bot@lawson-design` installs must reinstall as `5bot@lawson-design`), so per the semver rule it's a MAJOR bump. The features themselves (F1/F2/F3) are unchanged.
 
 Turns `ux.md` (v1.3.0) into a build plan for **F1** (context reminder), **F2** (`/5bot-status`), **F3** (next-command footer). T5 (stage-lock) stays research — now informed by the `ux.md` "T5 hook notes."
 

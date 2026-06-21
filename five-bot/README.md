@@ -1,4 +1,4 @@
-# The 5bot Framework (v1.3.0)
+# The 5bot Framework (v2.0.0)
 
 A disciplined way to take a software idea from rough concept to tested implementation using a small team of single-purpose AI roles, with a human as the final decision-maker. The whole system runs on plain Markdown files, so it is portable across tools and easy to read, edit, and version-control.
 
@@ -297,10 +297,11 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ## Recent improvements
 
-**v1.3.0 — Pipeline Awareness & Guardrails**
+**v2.0.0 — Pipeline Awareness & Guardrails**
 - **`/5bot-status`:** a read-only snapshot to re-orient after compaction, a fresh session, or time away — current stage, active ticket, last decision, and the single next command.
 - **Context-health reminder:** after a long session, the workflow nudges you to `/compact` (or start fresh) at a natural seam — reassuring you that all canon is on disk, so nothing is lost.
 - **Next-command footer:** `/handoff` and `/gate` always end by naming the exact next command, so you never have to remember the pipeline order.
+- **Install id renamed (breaking):** the plugin now installs as `5bot@lawson-design` (was `five-bot@`) — hence the major version. Existing installs should reinstall.
 
 **v1.2.1**
 - **⚠️ Handoff warning:** Template warns users that `handoff.md` is transient and overwritten each stage
@@ -309,4 +310,4 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ---
 
-*5bot Framework v1.3.0. Built on Markdown so it outlives any single tool.*
+*5bot Framework v2.0.0. Built on Markdown so it outlives any single tool.*

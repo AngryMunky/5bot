@@ -2,6 +2,17 @@
 
 <!-- Decisions and human-gate approvals. Newest on top. -->
 
+## Decision: Rebrand install id to `5bot` → release as v2.0.0
+
+- Date / By / Stage: 2026-06-21 / Human / Release (T9)
+- Status: APPROVED
+- Context: Static validation found the published install command was inconsistent — docs said `5bot@lawson-design` but the marketplace entry was named `five-bot`, so install would fail.
+- Decision 1 (install name): **Rebrand the marketplace entry `five-bot` → `5bot`** so the install id is `5bot@lawson-design`. This is BREAKING (existing `five-bot@` installs orphaned → must reinstall). Chose the breaking rebrand over the non-breaking "keep five-bot" option.
+- Decision 2 (version): Per the CLAUDE.md semver rule (breaking → MAJOR), the release is renumbered **v1.3.0 → v2.0.0**. Feature work (F1/F2/F3) is unchanged; dev artifacts authored as "v1.3.0" refer to this release.
+- Context (repo): `AngryMunky/5bot-plugin` was flipped **public → PRIVATE** today so it lists in claude.ai's "Sync from GitHub" dialog. CLI public-install path no longer applies while private; verification likely happens after merge via re-sync of `main`.
+- Follow-ups: `task_2dbc68f5` (qa.md "Test Plan" section mismatch — pre-existing, out of v2.0.0 scope).
+- Consequences: re-stamp all version markers to 2.0.0; rename marketplace entry to `5bot`; merge staging → `main`, tag v2.0.0 (pending explicit authorization).
+
 ## Approval: Final QA Gate — v1.3.0 Features
 
 - Date / By / Stage: 2026-06-21 / Human / Final QA Gate
