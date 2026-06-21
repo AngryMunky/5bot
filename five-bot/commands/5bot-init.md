@@ -1,7 +1,9 @@
 ---
-description: Scaffold the Five-Bot working files into the current project.
+description: Scaffold the 5bot working files into the current project.
 ---
-Initialize the Five-Bot workflow in the current project (see the `five-bot` skill).
+Initialize the 5bot workflow in the current project (see the `five-bot` skill).
+
+**Workflow overview:** Product Bot defines scope. UX Bot designs experience. Architect Bot plans build. Dev Bot implements. QA Bot reviews. Humans approve at gates. Each role reads shared Markdown state files and produces one artifact per stage.
 
 Create the following seven files in the project root, each with exactly the content shown between the markers. Do NOT overwrite any file that already exists - report which you skipped. Then add the line `@project-state.md` near the top of the project's CLAUDE.md (create CLAUDE.md if absent), set Current Stage to "Product" in project-state.md, and tell me to run `/product`.
 
