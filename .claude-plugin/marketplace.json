@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "5bot",
-      "source": "./five-bot",
+      "source": "./5bot",
       "description": "Five-Bot software development workflow: Product, UX, Architect, Developer, and QA roles that hand off through Markdown and stop at human approval gates.",
       "version": "2.0.0",
       "category": "workflow"
