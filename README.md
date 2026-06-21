@@ -25,7 +25,7 @@ Each role (Product Bot, UX Bot, Architect Bot, Developer Bot, QA Bot) is a slash
 
 **1. Install the plugin:**
 ```
-/plugin marketplace add AngryMunky/5bot-plugin
+/plugin marketplace add AngryMunky/5bot
 /plugin install 5bot@lawson-design
 ```
 
@@ -107,7 +107,7 @@ See [`5bot/README.md`](5bot/README.md) for:
 
 ## Repository
 
-- **GitHub:** https://github.com/AngryMunky/5bot-plugin
+- **GitHub:** https://github.com/AngryMunky/5bot
 - **License:** MIT
 - **Author:** Chad Lawson
 

@@ -22,7 +22,7 @@ This guide is self-contained. Hand it to anyone; they can stand up the same work
 
 **Install in Claude Code:**
 ```
-/plugin marketplace add AngryMunky/5bot-plugin
+/plugin marketplace add AngryMunky/5bot
 /plugin install 5bot@lawson-design
 ```
 

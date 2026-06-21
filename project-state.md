@@ -52,9 +52,9 @@ Claude Code plugin architecture
 
 ## Current Active Ticket
 
-**T9 (release) in progress — v2.0.0.** T6/T7/T8 implemented + QA-APPROVED. Re-stamped 1.3.0 → 2.0.0 (breaking `five-bot` → `5bot` install rename). Remaining: merge `v1.3.0-staging` → `main`, tag v2.0.0. Also pending: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
+**None — v2.0.0 shipped.** T6/T7/T8 + T9 done; merged to `main`, tagged. Post-release chores done: `v1.3.0-staging` branch deleted; plugin folder renamed `five-bot` → `5bot` (marketplace `source: ./5bot`; no version bump — non-functional). Open follow-ups: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
 
-**Deployment note:** Repo `AngryMunky/5bot-plugin` is now **PRIVATE** (flipped today) so it appears in claude.ai's "Sync from GitHub" plugin dialog. That dialog syncs `main`, so live verification likely happens **after** merge (re-sync), not from the staging branch. Install id is now `5bot@lawson-design`.
+**Deployment note:** Published as **two repos**. `AngryMunky/5bot-plugin` is **PRIVATE** so it appears in claude.ai's "Sync from GitHub" dialog (Cowork sync, source of truth). `AngryMunky/5bot` is a **PUBLIC mirror** (created 2026-06-21) for CLI installs — visibility is per-repo, not per-branch, so a public branch of a private repo isn't possible. The canonical clone dual-pushes `origin` to both (`git push origin main` → both); `git push public main` is the manual fallback. Public install: `/plugin marketplace add AngryMunky/5bot` → `/plugin install 5bot@lawson-design`.
 
 ## Major Decisions (Product / UX / Technical)
 
