@@ -1,6 +1,6 @@
 # 5bot - Disciplined AI Software Development Workflow
 
-**Version 1.2.1** | [Full documentation](five-bot/README.md)
+**Version 1.3.0** | [Full documentation](five-bot/README.md)
 
 A Claude Code plugin that brings structure and discipline to software development using five single-purpose AI roles with human approval gates. The whole system runs on plain Markdown, so it's portable, version-control friendly, and easy to audit.
 
@@ -43,7 +43,7 @@ Each role (Product Bot, UX Bot, Architect Bot, Developer Bot, QA Bot) is a slash
 - Repeat `/dev` / `/qa` for each ticket
 - `/gate` — human final approval and release
 
-## The eight commands
+## The nine commands
 
 | Command | Does |
 |---------|------|
@@ -55,6 +55,7 @@ Each role (Product Bot, UX Bot, Architect Bot, Developer Bot, QA Bot) is a slash
 | `/qa` | Review work, find bugs, return verdict |
 | `/handoff` | Update state files after each stage |
 | `/gate` | Human review and approval |
+| `/5bot-status` | Read-only snapshot to re-orient after `/compact` or a fresh session |
 
 ## Workflow diagram
 
@@ -83,12 +84,17 @@ All project state lives in seven Markdown files (git-friendly, versionable):
 - **Anyone working across multiple AI chats** and needing persistent state
 - **Teams fighting scope creep** and wanting to prevent silent decisions
 
-## Key features (v1.2.1)
+## Key features
 
-✨ **Recent improvements:**
+✨ **v1.3.0 — Pipeline Awareness & Guardrails:**
+- 🧭 `/5bot-status`: read-only snapshot to re-orient after a compaction, fresh session, or time away
+- 💾 Context-health reminder: after a long session, nudges you to `/compact` — reassuring that all canon is on disk, so nothing is lost
+- ➡️ Next-command footer: `/handoff` and `/gate` always name the exact next command
+
+**v1.2.1:**
 - ⚠️ Handoff warning: Templates warn users `handoff.md` is transient
 - 📝 "Canon" definition: Templates clarify `project-state.md` is the source of truth
-- 📋 Rule summaries: All 8 commands explain their scope and anti-drift rules upfront
+- 📋 Rule summaries: All commands explain their scope and anti-drift rules upfront
 
 ## Full documentation
 
@@ -107,4 +113,4 @@ See [`five-bot/README.md`](five-bot/README.md) for:
 
 ---
 
-*Built on Markdown so it outlives any single tool. v1.2.1*
+*Built on Markdown so it outlives any single tool. v1.3.0*

@@ -16,7 +16,7 @@ Individual developers and small teams (1–10 people) using Claude Code. Indie h
 
 ## Current Stage
 
-Released (v1.2.1)
+Releasing v1.3.0 (final gate APPROVED; local edits + version bump done; staging-branch push pending authorization)
 
 ## Approved MVP Features (v1.2.0)
 
@@ -52,7 +52,9 @@ Claude Code plugin architecture
 
 ## Current Active Ticket
 
-**All v1.2.1 tickets APPROVED:** T1 ✅ T2 ✅ T3 ✅ Ready for final human acceptance and release.
+**T9 (release) in progress.** T6/T7/T8 implemented + QA-APPROVED. Local edits done (plugin.json → 1.3.0, README, root CLAUDE, MEMORY). Remaining: staging-branch push → install-verify → merge to `main`. Also pending: T4 (v1.2.2 backlog), T5 (gate-enforcement research).
+
+**Deployment note:** Updating the source of the currently-installed 5bot plugin. Post-build, stage v1.3.0 on a non-default ("hidden") branch and install from it to verify before merging to `main` (folded into T9).
 
 ## Major Decisions (Product / UX / Technical)
 
@@ -60,7 +62,17 @@ Claude Code plugin architecture
 
 ## Open Questions
 
-**RESOLVED by human approval:**
+**RESOLVED at v1.3.0 UX gate (2026-06-21):**
+- ✓ OQ-1: "long" = bot self-judgment (confirmed)
+- ✓ OQ-2: `/5bot-status` stays brief (no Known Risks section)
+
+**RESOLVED at v1.3.0 Product gate (2026-06-21):**
+- ✓ Bundling: bundle T5 in the *design* initiative, but ship F1–F3 separately as v1.3.0 (stage-lock = later, own gate)
+- ✓ Cowork: verify in human's environment as a QA task (Claude walks through it)
+- ✓ "Long" threshold: bot self-judgment in Dev/QA personas
+- ✓ `/5bot-status`: new dedicated read-only command
+
+**RESOLVED by prior human approval:**
 - ✓ Non-software domains: DEFER (not priority now)
 - ✓ Visual dashboard: DEFERRED (only if native to Claude Code/Cowork)
 - ✓ Auto-lint Markdown: APPROVED (do this)
@@ -80,4 +92,4 @@ See `product.md` for mitigation strategies.
 
 ## Last Updated / By
 
-2026-06-21 / Human (Final acceptance APPROVED) → v1.2.1 released
+2026-06-21 / Final gate APPROVED → T9 release in progress (staging push pending authorization)

@@ -40,3 +40,42 @@ Stop for human approval at (1) after Product + UX, (2) after Architecture, (3) a
 
 ## Status labels
 APPROVED | PROPOSED | ASSUMPTION | OPEN QUESTION | RISK | OUT OF SCOPE | NEEDS REVIEW | BLOCKED | DONE
+
+## Next-command footer (F3)
+`/handoff` and `/gate` always END their output with a footer naming the exact next command, so the user never has to remember the pipeline order. Plain Markdown, always the final block (nothing prints after it):
+
+    ---
+    **▶ NEXT:** `/<command>` — <reason, <=12 words>
+
+Rules:
+- Command in backticks, with the leading slash — literally what to type.
+- Exactly one primary NEXT. If the choice branches, put alternates under an indented `If instead:` line; never two competing NEXT lines.
+- Derive the next command from `## Current Stage` in `project-state.md` — never guess. If the stage is unreadable, NEXT is `/5bot-status`.
+- `/handoff` is deterministic: NEXT is always `/gate`.
+- `/gate` prints the footer TWICE — a **waiting** form before the human replies (names NO command; lists the six verdict options and "nothing proceeds until you reply"), then a **resolved** form after the verdict.
+
+Gate verdict -> next command (by the stage the gate just closed):
+- **Product** approved -> `/ux`
+- **UX** approved -> `/architect`
+- **Architect** approved -> `/dev` (the first ticket)
+- **QA** approved -> `/dev` for the next ticket if the `dev-qa.md` backlog still has one, else `/handoff` to record the release-ready state
+- **REVISE** (any stage) -> re-run that same stage's command, then `/handoff` + `/gate`
+- **NEEDS CLARIFICATION** -> stay at the gate (answer in-thread, then re-print the waiting footer)
+- **REJECT** -> `/product` to re-scope, or stop
+- **DEFER** -> paused; resume later via the current stage's command (`/5bot-status` to re-orient)
+
+## Context-health reminder (F1)
+After a LONG session, surface a brief nudge to compact — at a natural seam only — and reassure that nothing is lost.
+
+Reassurance: *"All canon is on disk — project-state.md, decisions.md, and the stage files. Compacting or restarting loses nothing; re-run the current command to reload."*
+
+Variants:
+- **Terse** (for `/handoff` and `/gate`): "Long session — context may be drifting. State is safe on disk (project-state.md, decisions.md, stage files), so nothing is lost. Run `/compact` or start a fresh session, then re-run the current command to reload."
+- **Minimal** (one line, for Dev/QA turns): "Long session — safe to `/compact` or restart. Canon is on disk; re-run the current command to reload."
+
+Self-judge "long" (no token count exists) when ANY holds: (1) you had to re-read a state file you already loaded this session; (2) >=2 full pipeline stages or >=3 Dev<->QA hops in one unbroken session; (3) you catch yourself re-deriving something already settled in `decisions.md`; (4) earlier details feel hazy and need reconstruction.
+
+Guardrails (against nagging): at most once per session (twice only if the user keeps going well past it); only at a seam (handoff, gate, or the start of a Dev/QA turn) — never mid-artifact; never on a plainly short session; when unsure, stay silent. If F1 and the F3 footer both fire, print F1 ABOVE the footer so NEXT stays last. **Suppression:** `/gate` skips F1 if `/handoff` already nudged in the same transition; QA skips F1 if `/gate` will run next.
+
+## /5bot-status (F2)
+A read-only orientation command. Reads `project-state.md` (canon), the newest `decisions.md` block, and `handoff.md`; prints a brief snapshot — Stage, Active ticket, Last decision, Open questions (resolved collapsed to a count), exactly one recommended next command (using the F3 verdict map above), and a freshness footer ending "safe to /compact". ~10 lines, no Known Risks, writes nothing. Full spec and edge cases live in `commands/5bot-status.md` and `ux.md`.

@@ -1,4 +1,4 @@
-# Dev & QA (v1.2.0)
+# Dev & QA (v1.3.0)
 
 ## Backlog / Tickets
 
@@ -105,6 +105,86 @@
 **Out of scope:**
 - Actual implementation (research phase only)
 
+**Now informed by:** `ux.md` → "T5 hook notes" (Current Stage is free-text prose; needs a parseable stage token + gate flag; decisions.md is the authoritative approval ledger; Dev→QA stays ungated; legacy projects fall back to unlocked+warn).
+
+---
+
+## v1.3.0 Backlog — Pipeline Awareness & Guardrails
+
+> Sequential build: **T6 → T7 → T8 → T9** (shared files: SKILL.md, handoff.md, gate.md). Canonical edits in `plugins/five-bot/`; sync guidance into `_framework/5bot/`. See `architecture.md` → "v1.3.0".
+
+### T6: F3 — Next-command footer on /handoff and /gate — v1.3.0
+
+**Goal:** Every `/handoff` and `/gate` ends by naming the exact next command, so the user never guesses the pipeline order.
+
+**Acceptance Criteria:**
+- [ ] `skills/five-bot/SKILL.md` defines the canonical footer shell once: `---` + `**▶ NEXT:** \`<command>\` — <≤12-word reason>`, plus the full gate-verdict → next-command map (all 6 verdicts × each stage, per `ux.md`).
+- [ ] `commands/handoff.md`: append instruction to end output with the footer; NEXT is always `/gate` (deterministic).
+- [ ] `commands/gate.md`: print the **waiting** footer (options, NO command) before the human replies; print the **resolved** `▶ NEXT` footer after the verdict, derived from Current Stage × verdict.
+- [ ] Next command is derived from `## Current Stage` in `project-state.md`, never guessed; if unreadable, footer points to `/5bot-status`.
+- [ ] Exactly one primary NEXT; alternates under an indented "If instead:" line. Plain Markdown only (Cowork-safe).
+- [ ] **Sync:** the footer/verdict convention noted in `_framework/5bot/rules.md` (and userSettings handoff/gate command copies if present).
+
+**Files involved:** `skills/five-bot/SKILL.md`, `commands/handoff.md`, `commands/gate.md`; sync: `_framework/5bot/rules.md`.
+
+**Out of scope:** F1 reminder text (T8); any enforcement/blocking (T5); changing the verdict vocabulary.
+
+---
+
+### T7: F2 — New read-only /5bot-status command — v1.3.0
+
+**Goal:** A one-command re-orientation snapshot for after compaction / a cold start.
+
+**Acceptance Criteria:**
+- [ ] New file `commands/5bot-status.md` (read-only — writes nothing).
+- [ ] Reads `project-state.md` (canon), `decisions.md` (newest block only), `handoff.md` (next-step line).
+- [ ] Prints the brief 6-part snapshot per `ux.md` S1: header+contract subline, Stage, Active ticket, Last decision, Open questions (resolved collapsed to a count), one **→ recommended next command**, freshness footer. **No Known Risks section (OQ-2: keep brief).**
+- [ ] Recommends exactly ONE next command, reusing T6's successor logic (reference the skill map).
+- [ ] Handles all 5 edge cases from `ux.md`: no `project-state.md`; initialized-but-untouched; empty `decisions.md`; missing/stale `handoff.md` (trust canon + muted note); just-compacted (normal render).
+- [ ] `/5bot-status` added to the command roster in `skills/five-bot/SKILL.md` and README command list.
+- [ ] **Sync:** mirror into `_framework/5bot/` / local command set if the repo exposes commands there.
+
+**Files involved:** NEW `commands/5bot-status.md`; `skills/five-bot/SKILL.md`; `README.md`.
+
+**Out of scope:** Writing/altering any state file; showing risks; F1/F3 text (T6/T8).
+
+---
+
+### T8: F1 — Context-health reminder — v1.3.0  *(depends on T6)*
+
+**Goal:** After a long session, nudge the user to `/compact` (or start fresh) at a natural seam, reassuring that canon is on disk so nothing is lost.
+
+**Acceptance Criteria:**
+- [ ] `skills/five-bot/SKILL.md` defines the canonical F1 block once: the reassurance line, the **terse** variant (handoff/gate) and **minimal one-liner** (dev/qa), the self-judgment heuristic (4 drift signals), and the guardrails (≤ once per session; seam-only, never mid-artifact; silent when unsure).
+- [ ] `commands/handoff.md` + `commands/gate.md`: trigger to append the terse F1 **above** the F3 footer when the session is self-judged long.
+- [ ] **Suppression:** `/gate` does not fire F1 if `/handoff` already nudged in the same handoff→gate transition; QA does not fire F1 if `/gate` will run next.
+- [ ] `commands/dev.md` + `commands/qa.md`: trigger for the minimal one-liner under their guidance, at most once at the start of a turn.
+- [ ] **Sync:** F1 note added to `_framework/5bot/rules.md` "Token discipline" and to `_framework/5bot/personas/dev.md` + `qa.md`.
+
+**Files involved:** `skills/five-bot/SKILL.md`, `commands/handoff.md`, `commands/gate.md`, `commands/dev.md`, `commands/qa.md`; sync: `_framework/5bot/rules.md`, `_framework/5bot/personas/dev.md`, `_framework/5bot/personas/qa.md`.
+
+**Out of scope:** Automated token measurement (impossible from command markdown); the F3 footer itself (T6); blocking behavior (T5).
+
+---
+
+### T9: v1.3.0 Release — version bump, docs, sync — v1.3.0  *(depends on T6–T8 + QA)*
+
+**Goal:** Ship v1.3.0 cleanly with versions and copies in sync.
+
+**Acceptance Criteria:**
+- [ ] `.claude-plugin/plugin.json` 1.2.1 → 1.3.0 AND the `five-bot` entry in `.claude-plugin/marketplace.json` bumped to match (must stay in sync).
+- [ ] `README.md` documents the new `/5bot-status` command and the F1/F3 behavior (command table + a short "v1.3.0" note).
+- [ ] `_framework/5bot/` synced with all T6–T8 guidance (rules.md, personas).
+- [ ] Root `CLAUDE.md` plugin row → v1.3.0; MEMORY.md `5bot-plugin-published` updated.
+- [ ] **Staging branch before main:** push v1.3.0 to a non-default ("hidden") branch, then install the plugin *from that branch* in a real Claude Code session (and the human's Cowork env) to verify `/5bot-status`, the F1 reminder, and the F3 footer load and behave. Only merge/push to `main` after that verification passes (with explicit human authorization).
+- [ ] Commit + tag `v1.3.0` once verified on `main`.
+
+**Files involved:** `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `README.md`, `_framework/5bot/*`, root `CLAUDE.md`, `MEMORY.md`.
+
+**Out of scope:** Any new feature work; T5 research.
+
+**Note:** The user is iterating on the source of the *currently-installed* 5bot plugin. The staging-branch install is the safe way to validate the update before it reaches the live/published plugin on `main`.
+
 ## Developer Notes
 
 ### T1: Add ⚠️ Warning to Handoff.md Template
@@ -188,6 +268,16 @@ Added a 2-3 sentence rule summary to all 8 command files. Each summary explains 
 2. Verify the rule summary appears immediately after the role introduction
 3. Verify the summary is readable and clear in context
 4. Manual verification is sufficient (no automated tests needed)
+
+### v1.3.0 — T6 (F3 footer), T7 (/5bot-status), T8 (F1 reminder)
+
+**T6 — F3 next-command footer.** Added the canonical footer shell + gate-verdict map to `skills/five-bot/SKILL.md` ("## Next-command footer (F3)"). `commands/handoff.md` now ends with `▶ NEXT: /gate`; `commands/gate.md` prints a waiting footer (no command, 6 options) before the verdict and a resolved `▶ NEXT` footer after. Synced a brief note + version bump to `_framework/5bot/rules.md` (v1.0.0 → v1.1.0). Files: SKILL.md, commands/handoff.md, commands/gate.md, _framework/5bot/rules.md.
+
+**T7 — /5bot-status.** New read-only `commands/5bot-status.md`: reads project-state.md + newest decisions.md block + handoff.md; prints the brief 6-part snapshot (no Known Risks per OQ-2), one recommended next command (reusing the F3 map), and a "safe to /compact" freshness footer; 5 edge cases handled. Added an F2 summary to SKILL.md. README + repo-root marketplace roster deferred to T9 (consolidated). Files: commands/5bot-status.md (new), SKILL.md.
+
+**T8 — F1 context reminder.** Canonical F1 block (reassurance + terse/minimal variants + 4-signal heuristic + guardrails + suppression) added to SKILL.md. Triggers: handoff.md (terse, above footer), gate.md (terse, with handoff→gate suppression), dev.md + qa.md (minimal one-liner; QA suppresses if gate next). Synced to `_framework/5bot/rules.md` (Token discipline) and personas dev.md + qa.md (v1.0.0 → v1.1.0). Files: SKILL.md, commands/handoff.md, gate.md, dev.md, qa.md, _framework rules.md + personas/dev.md + qa.md.
+
+**Assumptions / limits:** F1 is a prompted heuristic (no token API exists). Runtime behavior (command loads, footer renders, Cowork `/compact`) is verified at T9's staging-branch install — not previewable in this environment (Markdown plugin). `marketplace.json` version lives at the repo root (not in the local plugin folder), so it is bumped at push time in T9.
 
 ## Review Notes
 
@@ -281,10 +371,29 @@ Added a 2-3 sentence rule summary to all 8 command files. Each summary explains 
 2. Integration test (when released): Run each command in Claude Code (`/product`, `/ux`, `/architect`, `/dev`, `/qa`, `/5bot-init`, `/handoff`, `/gate`) and verify rule summary appears
 3. No automated tests needed (template/command file edits, not code)
 
+### v1.3.0 QA — T6 / T7 / T8
+
+Reviewed against the ticket acceptance criteria and `ux.md`. Static review (Markdown plugin; runtime install verified at T9 staging).
+
+**T6 — F3 footer:** ✅ APPROVED — footer shell + verdict map in SKILL.md; handoff→NEXT `/gate`; gate waiting (no command) + resolved footer; derive-from-Current-Stage with `/5bot-status` fallback; one primary NEXT + "If instead"; synced to rules.md.
+
+**T7 — /5bot-status:** ✅ APPROVED — new read-only command (writes nothing); reads canon + newest decision + handoff; brief 6-part snapshot, no Known Risks (OQ-2); one next command via the F3 map; 5 edge cases; SKILL roster updated (README + marketplace → T9).
+
+**T8 — F1 reminder:** ✅ APPROVED — F1 block (reassurance/variants/heuristic/guardrails) in SKILL.md; triggers in handoff/gate/dev/qa; handoff→gate and QA→gate suppression; F1 prints above F3; synced to rules.md + personas.
+
+**Findings:** consistent "canon on disk" message across F1/F2/F3; suppression prevents double-nudge; logic centralized (DRY) in SKILL.md. No blocking bugs.
+
+**Carry-forward (non-blocking, owned by T9):** README command list and repo-root `marketplace.json` version not yet updated — confirm before release.
+
+**Runtime test plan (T9 staging install):** install from the staging branch; run `/5bot-status` in (a) an initialized project and (b) an empty folder; confirm `/handoff` and `/gate` print the footer; confirm `/gate` shows waiting → resolved; verify `/compact` wording behaves in the Cowork env.
+
 ## Bug List
 
 **T1:** No bugs found. Work is APPROVED for release.
 **T2:** No bugs found. Work is APPROVED for release.
 **T3:** No bugs found. Work is APPROVED for release.
+**T6:** No bugs found. APPROVED (runtime check deferred to T9 staging).
+**T7:** No bugs found. APPROVED (runtime check deferred to T9 staging).
+**T8:** No bugs found. APPROVED (runtime check deferred to T9 staging).
 
 ## Release Checklist

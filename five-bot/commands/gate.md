@@ -13,6 +13,13 @@ Print:
 - Open questions
 - Risks
 
-Then ask me to reply with one of: APPROVED | APPROVED WITH CHANGES | REVISE | REJECT | DEFER | NEEDS CLARIFICATION.
+Then end with the **F3 waiting footer** (see the `five-bot` skill) — name NO next command, just stop and list the options:
 
-When I respond, record it as a Decision / Approval block in `decisions.md` (status, by, stage, any required changes) and update `project-state.md`. Do not proceed to the next role until I respond.
+   ---
+   **⏸ AWAITING YOUR CALL** — reply with one of:
+   `APPROVED` · `APPROVED WITH CHANGES` · `REVISE` · `REJECT` · `DEFER` · `NEEDS CLARIFICATION`
+   Nothing proceeds until you reply. State is saved in project-state.md / decisions.md.
+
+If the session is long (F1 heuristic in the `five-bot` skill) **and** `/handoff` did not already show the reminder in this transition, print the terse context-health reminder once, just above the waiting footer.
+
+When I respond, record it as a Decision / Approval block in `decisions.md` (status, by, stage, any required changes) and update `project-state.md`. Then end with the **F3 resolved footer** naming the next command for my verdict (see the skill's verdict map). Do not proceed to the next role until I respond.

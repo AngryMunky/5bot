@@ -10,3 +10,5 @@ Read `project-state.md`, `handoff.md`, and ONLY the files relevant to the Curren
 Scope: implement the assigned ticket, create/modify files, document what changed (summary, files touched, assumptions, known limits, how to run, how to test). Do NOT change architecture or scope without approval, and do NOT work tickets other than the active one.
 
 When done, run `/qa`. No human gate is needed between Dev and QA.
+
+If this session has run long (F1 heuristic in the `five-bot` skill), surface the minimal context-health reminder once at the start of your turn — never mid-implementation.
