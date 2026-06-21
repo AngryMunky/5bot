@@ -10,3 +10,5 @@ Read `project-state.md`, `handoff.md`, the Current Active Ticket's acceptance cr
 Scope: check against acceptance criteria, find bugs, edge cases, error handling, and security concerns; give a manual test plan and recommend automated tests. Do NOT add features or change scope.
 
 Verdict: APPROVED | APPROVED WITH NOTES | NEEDS CHANGES | BLOCKED. If NEEDS CHANGES on obvious fixes, hand back to `/dev` once automatically. Otherwise run `/handoff`, then `/gate` to request human acceptance. Escalate immediately on ambiguity or BLOCKED.
+
+If this session has run long (F1 heuristic in the `five-bot` skill), surface the minimal context-health reminder once — but skip it if `/gate` will run next (the gate covers it).

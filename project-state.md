@@ -1,4 +1,4 @@
-# Project State (v1.2.1)
+# Project State (v2.0.0)
 
 > Canon. Every bot reads this first. Keep it short — detail lives in the stage files.
 
@@ -16,7 +16,7 @@ Individual developers and small teams (1–10 people) using Claude Code. Indie h
 
 ## Current Stage
 
-Released (v1.2.1)
+Releasing v2.0.0 — staged on branch `v1.3.0-staging`; pending merge to `main`. Repo is now PRIVATE (synced via claude.ai "Sync from GitHub").
 
 ## Approved MVP Features (v1.2.0)
 
@@ -52,7 +52,9 @@ Claude Code plugin architecture
 
 ## Current Active Ticket
 
-**All v1.2.1 tickets APPROVED:** T1 ✅ T2 ✅ T3 ✅ Ready for final human acceptance and release.
+**T9 (release) in progress — v2.0.0.** T6/T7/T8 implemented + QA-APPROVED. Re-stamped 1.3.0 → 2.0.0 (breaking `five-bot` → `5bot` install rename). Remaining: merge `v1.3.0-staging` → `main`, tag v2.0.0. Also pending: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
+
+**Deployment note:** Repo `AngryMunky/5bot-plugin` is now **PRIVATE** (flipped today) so it appears in claude.ai's "Sync from GitHub" plugin dialog. That dialog syncs `main`, so live verification likely happens **after** merge (re-sync), not from the staging branch. Install id is now `5bot@lawson-design`.
 
 ## Major Decisions (Product / UX / Technical)
 
@@ -60,7 +62,17 @@ Claude Code plugin architecture
 
 ## Open Questions
 
-**RESOLVED by human approval:**
+**RESOLVED at v1.3.0 UX gate (2026-06-21):**
+- ✓ OQ-1: "long" = bot self-judgment (confirmed)
+- ✓ OQ-2: `/5bot-status` stays brief (no Known Risks section)
+
+**RESOLVED at v1.3.0 Product gate (2026-06-21):**
+- ✓ Bundling: bundle T5 in the *design* initiative, but ship F1–F3 separately as v1.3.0 (stage-lock = later, own gate)
+- ✓ Cowork: verify in human's environment as a QA task (Claude walks through it)
+- ✓ "Long" threshold: bot self-judgment in Dev/QA personas
+- ✓ `/5bot-status`: new dedicated read-only command
+
+**RESOLVED by prior human approval:**
 - ✓ Non-software domains: DEFER (not priority now)
 - ✓ Visual dashboard: DEFERRED (only if native to Claude Code/Cowork)
 - ✓ Auto-lint Markdown: APPROVED (do this)
@@ -80,4 +92,4 @@ See `product.md` for mitigation strategies.
 
 ## Last Updated / By
 
-2026-06-21 / Human (Final acceptance APPROVED) → v1.2.1 released
+2026-06-21 / Re-stamped to v2.0.0 (5bot rename); staging ready, merge to `main` pending authorization

@@ -1,4 +1,4 @@
-# The 5bot Framework (v1.2.1)
+# The 5bot Framework (v2.0.0)
 
 A disciplined way to take a software idea from rough concept to tested implementation using a small team of single-purpose AI roles, with a human as the final decision-maker. The whole system runs on plain Markdown files, so it is portable across tools and easy to read, edit, and version-control.
 
@@ -143,7 +143,7 @@ Five "bots" run in sequence, each doing exactly one job: a **Product Bot** defin
 
 ---
 
-## The eight slash commands
+## The nine slash commands
 
 | Command | Bot | Job | Reads | Produces |
 |---------|-----|-----|-------|----------|
@@ -155,6 +155,7 @@ Five "bots" run in sequence, each doing exactly one job: a **Product Bot** defin
 | `/qa` | QA Bot | Review work against acceptance criteria; find bugs; return verdict | Ticket + code changes + `dev-qa.md` | `dev-qa.md` (review notes, bug list) |
 | `/handoff` | Bookkeeper | Update state files after each stage: what changed, what's next, active ticket | Current stage files | `handoff.md` (transient), `project-state.md`, `decisions.md` |
 | `/gate` | Human | Review stage summary; approve, request changes, or reject. Record decision. | `project-state.md`, `handoff.md`, relevant artifacts | `decisions.md` (approval block), `project-state.md` (new stage) |
+| `/5bot-status` | — | Read-only re-orientation snapshot: stage, active ticket, last decision, and the one next command. Run it after `/compact`, a fresh session, or time away | `project-state.md`, `decisions.md`, `handoff.md` | Nothing (read-only) |
 
 **Workflow pattern:**
 1. Run a bot command (e.g., `/product "build a todo app"`)
@@ -294,12 +295,19 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ---
 
-## Recent improvements (v1.2.1)
+## Recent improvements
 
+**v2.0.0 — Pipeline Awareness & Guardrails**
+- **`/5bot-status`:** a read-only snapshot to re-orient after compaction, a fresh session, or time away — current stage, active ticket, last decision, and the single next command.
+- **Context-health reminder:** after a long session, the workflow nudges you to `/compact` (or start fresh) at a natural seam — reassuring you that all canon is on disk, so nothing is lost.
+- **Next-command footer:** `/handoff` and `/gate` always end by naming the exact next command, so you never have to remember the pipeline order.
+- **Install id renamed (breaking):** the plugin now installs as `5bot@lawson-design` (was `five-bot@`) — hence the major version. Existing installs should reinstall.
+
+**v1.2.1**
 - **⚠️ Handoff warning:** Template warns users that `handoff.md` is transient and overwritten each stage
 - **"Canon" definition:** Template clarifies that `project-state.md` is the single source of truth
-- **Command rule summaries:** All 8 commands now explain their scope and anti-drift rules upfront
+- **Command rule summaries:** All commands explain their scope and anti-drift rules upfront
 
 ---
 
-*5bot Framework v1.2.1. Built on Markdown so it outlives any single tool.*
+*5bot Framework v2.0.0. Built on Markdown so it outlives any single tool.*
