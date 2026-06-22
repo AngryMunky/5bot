@@ -109,7 +109,7 @@ See [`5bot/README.md`](5bot/README.md) for:
 
 - **GitHub:** https://github.com/AngryMunky/5bot
 - **License:** MIT
-- **Author:** Chad Lawson
+- **Author:** Angry Munky
 
 ---
 
