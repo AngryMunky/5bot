@@ -236,11 +236,11 @@ All state is stored in seven Markdown files per project. These are the "filing c
 
 ## The human gates
 
-The human is the decision-maker, not a micromanager. Approval is required at three points:
+The human is the decision-maker, not a micromanager. **Two gates are required** (optional third):
 
-1. **After Product + UX** — what we're building and how the user moves through it. (Split into two gates for large projects.)
-2. **After Architecture** — stack, data model, build plan.
-3. **After QA** — accept the work, request changes, or send it back.
+1. **After Product + UX** — what we're building and how the user moves through it. (Always required; merge for small projects.)
+2. **After QA** — accept the work, request changes, or send it back. (Always required.)
+3. **(Optional) After Architecture** — stack, data model, build plan. Skip for features under ~5 tickets or in established codebases where you trust the Architect's judgment; the QA gate still catches architectural gaps. Include for greenfield work, complex builds, or when you want explicit Architect sign-off.
 
 The Developer → QA loop runs without a human gate; QA may bounce obvious fixes back to the Developer once on its own. The human is pulled in only on a second failure, on ambiguity, or when something is BLOCKED. At each gate the human responds with one of: APPROVED, APPROVED WITH CHANGES, REVISE, REJECT, DEFER, NEEDS CLARIFICATION.
 
@@ -330,4 +330,4 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ---
 
-*5bot Framework v2.1.0. Built on Markdown so it outlives any single tool.*
+*5bot Framework v2.1.0. Built on Markdown so it outlives any single tool. (Rules v1.2.0: two gates by default.)*

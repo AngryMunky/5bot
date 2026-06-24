@@ -2,6 +2,14 @@
 
 <!-- Decisions and human-gate approvals. Newest on top. -->
 
+## Framework Decision: Gate strategy (default two gates, not three)
+
+- Date / By: 2026-06-23 / Human (developer feedback on workflow velocity)
+- Decision: Changed the default gate pattern from **three mandatory gates** (Product+UX → Architect → QA) to **two required gates** (Product+UX, QA) with **Architect gate optional**. Architect gate is now skipped by default for features under ~5 tickets or in established codebases (where the QA gate still catches gaps); included for greenfield work or when explicit Architect sign-off is desired.
+- Rationale: gates are checkpoints for *human decisions* (scope/direction or quality). The Architect gate creates overhead for smaller work without changing the decision points that matter (what we build, whether we accept it). QA still reviews the architectural choices, so skipping the explicit gate doesn't lose verification — it trades a pause for velocity.
+- Impact: affects _framework/5bot/rules.md (v1.2.0) and the README guidance. All future projects created via `/5bot-init` inherit this default. Existing projects (including the 5bot plugin itself) can optionally adopt it for future work.
+- Backward compatible: teams that prefer three gates can easily reinstate the Architect gate by running `/architect` → `/gate` — it's just not the default nudge anymore.
+
 ## Approval: QA Gate — T14 (v2.1.0 release)
 
 - Date / By / Stage: 2026-06-23 / Human / QA Gate (release authorization)
