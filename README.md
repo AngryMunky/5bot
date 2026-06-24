@@ -1,6 +1,6 @@
 # 5bot - Disciplined AI Software Development Workflow
 
-**Version 2.0.0** | [Full documentation](5bot/README.md)
+**Version 2.1.0** | [Full documentation](5bot/README.md)
 
 A Claude Code plugin that brings structure and discipline to software development using five single-purpose AI roles with human approval gates. The whole system runs on plain Markdown, so it's portable, version-control friendly, and easy to audit.
 
@@ -86,6 +86,9 @@ All project state lives in seven Markdown files (git-friendly, versionable):
 
 ## Key features
 
+✨ **v2.1.0 — Claude Design reference (optional):**
+- 🎨 Link a Claude Design `.zip` export: `/ux` records a Design Reference and the Developer Bot builds against the extracted `<Name>.dc.html` — ticket-scoped, never the whole design. `ux.md` stays canon; native Claude Design only. Entirely optional.
+
 ✨ **v2.0.0 — Pipeline Awareness & Guardrails:**
 - 🧭 `/5bot-status`: read-only snapshot to re-orient after a compaction, fresh session, or time away
 - 💾 Context-health reminder: after a long session, nudges you to `/compact` — reassuring that all canon is on disk, so nothing is lost
@@ -113,4 +116,4 @@ See [`5bot/README.md`](5bot/README.md) for:
 
 ---
 
-*Built on Markdown so it outlives any single tool. v2.0.0*
+*Built on Markdown so it outlives any single tool. v2.1.0*

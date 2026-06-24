@@ -1,4 +1,4 @@
-# Project State (v2.0.0)
+# Project State (v2.1.0)
 
 > Canon. Every bot reads this first. Keep it short — detail lives in the stage files.
 
@@ -14,9 +14,9 @@ A Claude Code plugin providing a disciplined Product → UX → Architect → De
 
 Individual developers and small teams (1–10 people) using Claude Code. Indie hackers, startup founders, consultants, and teams wanting structured development without ceremony.
 
-## Current Stage
+## Current Active Ticket
 
-Releasing v2.0.0 — staged on branch `v1.3.0-staging`; pending merge to `main`. Repo is now PRIVATE (synced via claude.ai "Sync from GitHub").
+**v2.1.0 RELEASED 2026-06-23.** All tickets T10–T14 complete. v2.1.0 ships the optional Claude Design design-reference feature. T14 (release) approved at the QA gate: `plugin.json` + `marketplace.json` `5bot` entry → 2.1.0; READMEs + stage headers re-stamped; orphaned root `.claude-plugin/plugin.json` removed; dual-pushed (private `5bot-plugin` + public `AngryMunky/5bot`) + tagged `v2.1.0` from the canonical clone as Angry Munky. Open follow-up: recommended `/ux` re-sync of `ux.md` D2–D5 design-era copy. T15 (connector import) deferred. (Prior: v2.0.0 `main` `dbb0e1c`, tagged; installs as `5bot@lawson-design`.)
 
 ## Approved MVP Features (v1.2.0)
 
@@ -34,7 +34,7 @@ Releasing v2.0.0 — staged on branch `v1.3.0-staging`; pending merge to `main`.
 
 ## Explicitly Out of Scope
 
-- Visual design tools (Figma, Claude Design integration)
+- Third-party visual design tools (Figma, Sketch, etc.) — *native Claude Design is now in-scope as v2.1.0*
 - External integrations (GitHub, Jira, Slack)
 - Multi-project orchestration
 - Metrics/analytics dashboards
@@ -50,11 +50,13 @@ Claude Code plugin architecture
 - Framework: Markdown files auto-loaded by Claude Code
 - Storage: User's local project directory (Markdown files + git)
 
-## Current Active Ticket
+## Open Follow-ups
 
-**None — v2.0.0 shipped.** T6/T7/T8 + T9 done; merged to `main`, tagged. Post-release chores done: `v1.3.0-staging` branch deleted; plugin folder renamed `five-bot` → `5bot` (marketplace `source: ./5bot`; no version bump — non-functional). Open follow-ups: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
+T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix). *Proposed (pending T13 gate):* a `/ux` re-sync of `ux.md` D2–D5 to the as-built design schema.
 
-**Deployment note:** Published as **two repos**. `AngryMunky/5bot-plugin` is **PRIVATE** so it appears in claude.ai's "Sync from GitHub" dialog (Cowork sync, source of truth). `AngryMunky/5bot` is a **PUBLIC mirror** (created 2026-06-21) for CLI installs — visibility is per-repo, not per-branch, so a public branch of a private repo isn't possible. The canonical clone dual-pushes `origin` to both (`git push origin main` → both); `git push public main` is the manual fallback. Public install: `/plugin marketplace add AngryMunky/5bot` → `/plugin install 5bot@lawson-design`.
+## Deployment
+
+Published as **two repos**. `AngryMunky/5bot-plugin` is **PRIVATE** so it appears in claude.ai's "Sync from GitHub" dialog (Cowork sync, source of truth). `AngryMunky/5bot` is a **PUBLIC mirror** (created 2026-06-21) for CLI installs — visibility is per-repo, not per-branch, so a public branch of a private repo isn't possible. The canonical clone dual-pushes `origin` to both (`git push origin main` → both); `git push public main` is the manual fallback. Public install: `/plugin marketplace add AngryMunky/5bot` → `/plugin install 5bot@lawson-design`.
 
 ## Major Decisions (Product / UX / Technical)
 
@@ -62,22 +64,7 @@ Claude Code plugin architecture
 
 ## Open Questions
 
-**RESOLVED at v1.3.0 UX gate (2026-06-21):**
-- ✓ OQ-1: "long" = bot self-judgment (confirmed)
-- ✓ OQ-2: `/5bot-status` stays brief (no Known Risks section)
-
-**RESOLVED at v1.3.0 Product gate (2026-06-21):**
-- ✓ Bundling: bundle T5 in the *design* initiative, but ship F1–F3 separately as v1.3.0 (stage-lock = later, own gate)
-- ✓ Cowork: verify in human's environment as a QA task (Claude walks through it)
-- ✓ "Long" threshold: bot self-judgment in Dev/QA personas
-- ✓ `/5bot-status`: new dedicated read-only command
-
-**RESOLVED by prior human approval:**
-- ✓ Non-software domains: DEFER (not priority now)
-- ✓ Visual dashboard: DEFERRED (only if native to Claude Code/Cowork)
-- ✓ Auto-lint Markdown: APPROVED (do this)
-- ✓ Multi-project namespacing: RESOLVED (current folder-per-project model is correct)
-- ✓ Dev/QA separation: APPROVED (keep separate, no looping variant)
+**None open.** v2.1.0 design-integration questions are all resolved (OQ-1/2/3/5/7/8/9, the last three confirmed at the Architect gate) or deferred (OQ-6 → T15, the connector path); earlier-release questions (v1.2.x / v1.3.0) are all resolved. Full history in `decisions.md`; v2.1.0 specifics in `architecture.md` / `product.md` / `ux.md` "v2.1.0".
 
 ## Known Risks
 
@@ -92,4 +79,4 @@ See `product.md` for mitigation strategies.
 
 ## Last Updated / By
 
-2026-06-21 / Re-stamped to v2.0.0 (5bot rename); staging ready, merge to `main` pending authorization
+2026-06-23 / Dev Bot — canon prune (removed stale duplicate Active-Ticket block; collapsed resolved Open Questions to a pointer). T13 still at QA gate.

@@ -1,4 +1,4 @@
-# The 5bot Framework (v2.0.0)
+# The 5bot Framework (v2.1.0)
 
 A disciplined way to take a software idea from rough concept to tested implementation using a small team of single-purpose AI roles, with a human as the final decision-maker. The whole system runs on plain Markdown files, so it is portable across tools and easy to read, edit, and version-control.
 
@@ -181,13 +181,30 @@ Each stage produces a concrete artifact — a file, a spec, a set of tickets, a 
 
 **Product Bot** — Defines the problem, target users, requirements, and MVP scope. Separates must-haves from later features. Does not design screens, choose technology, or write code.
 
-**UX Bot** — Turns approved requirements into user flows, a screen list, navigation, forms, and empty/error/success states. Does not change scope or pick a stack. `ux.md` is its canonical output; a visual tool (e.g. Claude Design) may optionally be used at the UX gate to mock up screens as an aid for the human's review, but the mock-up is never a pipeline input — if kept, it's exported into the repo and linked from `ux.md`.
+**UX Bot** — Turns approved requirements into user flows, a screen list, navigation, forms, and empty/error/success states. Does not change scope or pick a stack. `ux.md` is its canonical output; a visual tool (e.g. Claude Design) may optionally be used at the UX gate to mock up screens as an aid for the human's review, but the mock-up is never a pipeline input — if kept, it's exported into the repo and linked from `ux.md`. See **Optional: a Claude Design reference** below for the supported zip workflow.
 
 **Technical Architect Bot** — Recommends the stack, designs the data model and architecture, plans the API and auth, and breaks the work into buildable tickets with acceptance criteria. Does not expand the MVP or write production code.
 
 **Developer Bot** — Implements one ticket at a time against the approved plan, reading only the files that ticket needs. Documents what changed. Does not change architecture or scope.
 
 **Reviewer / QA Bot** — Checks the work against the ticket's acceptance criteria, finds bugs and edge cases, and returns a verdict: APPROVED, APPROVED WITH NOTES, NEEDS CHANGES, or BLOCKED. Does not add features.
+
+---
+
+## Optional: a Claude Design reference (UX stage)
+
+5bot can optionally link a **Claude Design** export so the Developer Bot builds against a real design — but `ux.md` always stays the canon. This step is **entirely optional**: if you have no design, `/ux` proceeds exactly as before, with zero friction.
+
+**The zip workflow (the supported path):**
+
+1. In Claude Design, open your project and choose **"Download zip instead"** (or save the `*.dc.html`).
+2. Drop the file anywhere in your repo and tell `/ux` the path — or paste the project URL / the "Send to local coding agent" prompt.
+3. `/ux` normalizes the file to `design/<slug>.zip`, extracts it into `design/<slug>/`, finds the primary `<Name>.dc.html`, and records a `## Design Reference (Claude Design)` block in `ux.md` with the real paths and date.
+4. When a ticket cites that reference, `/dev` reads `design/<slug>/<Name>.dc.html` and implements **the ticket's scope only** — never auto-generating the whole design. If the artifact is missing or stale, Dev falls back to the `ux.md` text spec and never blocks.
+
+**The `design/` convention:** extracted contents live in `design/<slug>/`, with the pristine source kept alongside as `design/<slug>.zip`; the primary artifact is `design/<slug>/<Name>.dc.html`. The `design/` folder is created on first use — `/5bot-init` doesn't scaffold it.
+
+**Ground rules:** `ux.md` stays canon — the design is a *linked aid*, not the spec. Only **native Claude Design** is supported; third-party visual tools (Figma, Sketch, etc.) remain out of scope. Connector/MCP import is a planned later enhancement; today the zip export is the supported path.
 
 ---
 
@@ -297,6 +314,9 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ## Recent improvements
 
+**v2.1.0 — Claude Design reference (optional)**
+- **Link a Claude Design export:** `/ux` can capture a Claude Design `.zip` into a `## Design Reference (Claude Design)` block, and the Developer Bot then builds against the extracted `<Name>.dc.html` — ticket-scoped, never auto-generating the whole design. Stored under `design/<slug>/` (pristine zip kept alongside). `ux.md` stays canon; native Claude Design only (Figma stays out). Entirely optional — zero friction when unused.
+
 **v2.0.0 — Pipeline Awareness & Guardrails**
 - **`/5bot-status`:** a read-only snapshot to re-orient after compaction, a fresh session, or time away — current stage, active ticket, last decision, and the single next command.
 - **Context-health reminder:** after a long session, the workflow nudges you to `/compact` (or start fresh) at a natural seam — reassuring you that all canon is on disk, so nothing is lost.
@@ -310,4 +330,4 @@ This framework is shaped for software development, but the skeleton — **Define
 
 ---
 
-*5bot Framework v2.0.0. Built on Markdown so it outlives any single tool.*
+*5bot Framework v2.1.0. Built on Markdown so it outlives any single tool.*

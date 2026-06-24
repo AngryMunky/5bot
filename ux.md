@@ -1,4 +1,4 @@
-# UX (v2.0.0 — Pipeline Awareness & Guardrails)
+# UX (v2.1.0 — Claude Design reference)
 
 > Supersedes the v1.2.0 UX audit (in git history) for the v1.3.0 work. Canonical UX artifact the Architect reads. Designs the experience for the three approved features: **F1** context-health reminder, **F2** `/5bot-status` command, **F3** next-command footer. T5 (stage-lock) is research only — hook notes for the Architect are at the end.
 
@@ -200,3 +200,131 @@ F2/F3 are **read-only** features over the **same state** a future hard lock woul
 - **Enforcement point:** a pre-flight check at the top of each command (read stage + decisions, refuse/warn if out of order). **Dev→QA is intentionally ungated** — the lock table is not uniform.
 - **Honesty:** with no runtime hook, a "hard" lock is still bot-honored instruction — it raises the floor, it is not cryptographic. T5 should say so.
 - **Migration:** legacy projects lack the token — fall back to "unlocked + warn," never hard-block. Adding the token to the template is ≥ MINOR and must sync the `_framework\5bot\` copy and the standalone plugin copy.
+
+---
+
+# UX (v2.1.0 — Claude Design Integration, optional)
+
+> Canonical UX artifact the Architect reads for v2.1.0. Designs the experience of the **optional Claude Design "design-reference" step** approved at the 2026-06-22 Product gate. **Native Claude Design only** (Figma stays out). In every downstream project, that project's `ux.md` stays source of truth; a design is a **linked aid, never an auto-build input.**
+
+## Primary User Goals (v2.1.0)
+
+1. **Attach a Claude Design artifact** to a 5bot project so the Dev Bot builds against the real design.
+2. **Never hit a dead end** — when the `claude_design` connector isn't available in this surface, a fallback still records the design.
+3. **Always know which path is active** (connector import vs fallback) and what to do next.
+4. **Keep `ux.md` canon** — the design is referenced/linked, not treated as the spec.
+
+## Design stance on the open questions — RESOLVED at UX gate (2026-06-22)
+
+- **OQ-2 → RESOLVED: the `.zip` download is the first-class MVP path.** Human direction: *"I can download the design from Claude Design as a `.zip` — go with that."* MVP = the user exports the design as a `.zip` from Claude Design, drops it in the repo, and the bot records it. The `claude_design` connector import (D2) is a **progressive enhancement, deferred past MVP** — so the **MVP carries no dependency on the connector**, which sidesteps the surface-availability problem entirely.
+- **OQ-3 → RESOLVED: the committed `.zip` (with its extracted `*.dc.html`) is the stored artifact; `ux.md` holds the Design Reference block that links it.** Saved in the repo (proposed `design/`); exact path/format = Architect (OQ-7).
+- **OQ-5 → ACCEPTED: UX-only capture for MVP** (no objection raised). `/ux` captures; the Dev Bot consumes. Ad-hoc Dev-stage attach is post-MVP.
+
+## Main User Flow — Flow D: attach a Claude Design reference at `/ux`
+
+1. During `/ux`, the user signals they have a Claude Design design — by pasting the **project URL**, pasting Claude Design's **"Send to local coding agent" prompt**, or naming an **exported file**.
+2. The UX Bot checks whether the `claude_design` connector is connected/authorized in this surface.
+   - **Connected → D2 (connector import):** use the claude_design tools to fetch the project/file(s); record the reference + imported file list; optionally export a local copy into the repo.
+   - **Not connected → D3 (fallback):** state plainly that the connector isn't available *here* (it's surface-dependent), then take the fallback — record the URL as a reference and/or accept an exported file path (the user uses Claude Design's **"Download zip instead"** or saves the `*.dc.html` and drops it in the repo).
+3. Either path → **D4**: write the **Design Reference** block into `ux.md`. Continue normal UX (flows/screens can now cite the design). The design never auto-generates code — Dev implements via tickets.
+
+**Branch default:** no design → plain text-only `/ux`, exactly as today. The step is opt-in and adds zero friction when unused.
+
+## Screen List (text "screens" = command behavior)
+
+| # | Screen | New / Mod | Type |
+|---|--------|-----------|------|
+| D1 | `/ux` design-reference step (offer + capture) | Modified `/ux` | Command behavior |
+| D2 | Connector-available import sub-flow | New | Sub-flow |
+| D3 | Connector-unavailable fallback sub-flow | New | Sub-flow |
+| D4 | "Design Reference" block written to `ux.md` | New | Artifact section |
+| D5 | Connector-status / error / guidance states | New | States |
+
+## Navigation Model
+
+The design-reference step is an **optional branch inside `/ux`**, never a gate or blocker. Plain Markdown only (terminal / web / Cowork parity). The connector is an *enhancement*; the fallback is the floor.
+
+## Screen-by-Screen Detail
+
+### D1 — `/ux` design-reference step
+At the top of `/ux`, if the user supplied (or pastes) a Claude Design URL / prompt / file, enter Flow D; otherwise proceed with normal UX silently. The bot parses a pasted "Send to local coding agent" prompt to seed `{project URL, file name}` automatically.
+
+### D2 — Connector available (import)
+> *Claude Design connector detected. Importing **Tag Hag.dc.html** from the project… imported. Recorded in `ux.md` → Design Reference. (Saved a local copy to `design/tag-hag.dc.html`.)*
+
+### D3 — Connector NOT available (fallback) — the key state
+```
+The claude_design connector isn't connected in this environment, so I can't pull the
+design from the link directly. (Connector availability depends on your Claude surface —
+local Claude Code vs Cowork vs web — not on 5bot.) Two ways forward, both fine:
+
+  • Quick: I'll record the design URL as a reference now (note: a URL can change or
+    expire and isn't version-controlled).
+  • Durable (recommended): in Claude Design choose "Download zip instead" (or save the
+    *.dc.html), drop the file into this repo, and tell me the path — I'll link it.
+
+Either way, ux.md stays the source of truth. Want me to (a) record the URL,
+(b) wait for an exported file, or (c) skip the design for now?
+```
+*The copy deliberately does NOT tell the user to run a specific connect command, because whether one exists is surface-dependent and unverified (see OQ-6). When Architect confirms the real connect/auth step per surface, D3 gains a third "connect it" option.*
+
+### D4 — "Design Reference" block (written to `ux.md`)
+```
+## Design Reference (Claude Design)
+- Source:         Claude Design — <project URL>
+- File(s):        Tag Hag.dc.html
+- Import method:  fallback-zip            # MVP; "connector" reserved for deferred enhancement (T15)
+- Local artifact: design/tag-hag.dc.html (committed) | none (URL only)
+- Captured:       2026-06-22
+- Covers:         <which screens / flows this design informs>
+- Note:           ux.md is canon; this design is a linked aid, not the spec.
+```
+*Exact file location / format is Architect's call (OQ-7); the block schema above is the UX contract.*
+
+### D5 — States
+- **Connected + authorized:** import succeeds → D4. Success.
+- **Connected + unauthorized:** offer to authorize (the real step, per OQ-6) OR use fallback. Never block.
+- **Not connected (reported case):** D3 fallback. Never block.
+- **URL-only (no export):** record, but warn it's not version-controlled; recommend a committed export.
+- **Bad / expired / inaccessible link:** say so plainly; offer a URL-only note or ask for an export.
+- **No design:** skip; normal `/ux`.
+
+## Forms & Fields
+
+No GUI forms. Inputs are: a pasted Claude Design URL or "send to agent" prompt, an optional exported file path, and a one-word choice (record URL / wait for file / skip).
+
+## Buttons & Actions
+
+| Action | Where | Effect |
+|--------|-------|--------|
+| Paste Claude Design URL / "Send to local coding agent" prompt | during `/ux` | Seeds + starts the design-reference capture |
+| Provide exported file path (`*.dc.html` / zip) | `/ux` fallback | Records + links a committed local artifact |
+| Connector import | when connector present | Pulls the design via `claude_design` tools |
+
+## Empty / Error / Success States
+
+**Success:** a Design Reference block lands in `ux.md`, Dev can implement against it, and the user is never blocked by a missing connector. See **D5** for the remaining states.
+
+## Usability Concerns
+
+1. **Don't over-promise the connector (highest).** The user's actual pain was being told to use a connector/command that wasn't there. Copy stays **conditional** and always pairs with the working fallback — no instruction to run an unverified command (gated on OQ-6).
+2. **Source-of-truth clarity.** The block states `ux.md` is canon and the design is an aid — prevents "the mock-up is the spec" drift.
+3. **Durability.** URL-only references can rot; nudge toward a committed export.
+4. **Stay invisible when unused.** Projects that don't use Claude Design see no change to `/ux`.
+5. **No auto-build.** Capture only; Dev implements via tickets — matches the human's "I want the option, not this specific design built" intent.
+
+## Visual aid for this gate (optional)
+
+Per the `/ux` protocol, a Claude Design mock-up of this screen list could serve as a human-review aid — but the connector isn't available in this environment (the very gap this feature addresses), so this gate uses `ux.md` as the canonical and only artifact. If a mock-up is later produced, export it into the repo and link it here.
+
+## Assumptions
+
+- When present, the `claude_design` connector exposes import/fetch tools callable by the agent (feasibility → Architect, OQ-6).
+- "Send to local coding agent" prompts embed a parseable `{project URL, file name}`.
+- A plain-Markdown reference block needs no schema enforcement at MVP.
+
+## Open Questions
+
+- ✓ **OQ-2 / OQ-3 / OQ-5 — RESOLVED at UX gate (2026-06-22):** `.zip` download is the first-class MVP path; the committed `.zip` (+ extracted `*.dc.html`) is the artifact, linked from a `ux.md` Design Reference block; UX-only capture. Connector import deferred to a progressive enhancement.
+- **OQ-6 (→ Architect, now NON-blocking for MVP):** real connect/authorize path for `claude_design` per surface (is `/design-login` a real command in Code/Cowork/web?) — only needed when the connector-import enhancement is built; the MVP zip path doesn't depend on it.
+- **OQ-7 (→ Architect, minor):** default repo location + format for committed design artifacts (proposed `design/`).

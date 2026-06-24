@@ -4,36 +4,27 @@
 
 ## Stage Completed
 
-Dev/QA — v1.3.0 features T6, T7, T8 implemented and QA-approved
+QA — T14 (v2.1.0 release) Phase 1 reviewed. Phase 2 (push) is gated.
 
-## Bot
+## QA Verdict
 
-Developer Bot → QA Bot (verdict: APPROVED, no bugs)
+**✅ APPROVED WITH NOTES.** Phase 1 (version + doc bumps in the working source) verified correct and version-consistent. Phase 2 (the irreversible dual-push to the **public** mirror + `main`) is correctly **not executed** — the human gate is the explicit authorization. Full review in `dev-qa.md` → Review Notes → T14.
 
-## What Changed
+## Decisions needed at the gate (before the push)
 
-- **T6 (F3 footer):** footer shell + gate-verdict map added to the `five-bot` skill; `/handoff` ends with `▶ NEXT: /gate`; `/gate` prints waiting → resolved footer
-- **T7 (`/5bot-status`):** new read-only command (brief snapshot, 5 edge cases) + skill F2 summary
-- **T8 (F1 reminder):** F1 block in the skill; triggers in handoff/gate/dev/qa with suppression rules
-- Synced to `_framework/5bot/`: rules.md (v1.1.0), personas dev.md + qa.md (v1.1.0)
-- QA: all three APPROVED, no bugs; runtime checks deferred to the T9 staging install
+1. **Orphaned root `.claude-plugin/plugin.json` @ v1.2.1** — off the install path (marketplace → `5bot/`), stale since pre-v2.0.0. **Recommend deleting** (or bump to 2.1.0). Not a functional blocker.
+2. **PRIVACY — confirm publishing internal docs to the PUBLIC mirror.** Root-tracked → pushed public: `dev-qa.md` (full QA/ticket history), `decisions.md`, `handoff.md`, `project-state.md` (incl. the Deployment note with the private/public strategy + Temp clone path + internal task IDs). Established at v2.0.0, but expanded now. Confirm it's intended, or exclude internal docs.
+3. **Optional:** re-stamp `product.md`/`architecture.md`/`ux.md` headers v2.0.0 → v2.1.0 for consistency (canonical version already bumped).
 
-## Artifacts Created / Updated
+## Phase 2 (on authorization), per PUBLISH.md
 
-- `skills/five-bot/SKILL.md` (F1/F2/F3 sections)
-- `commands/5bot-status.md` (new), `commands/handoff.md`, `gate.md`, `dev.md`, `qa.md`
-- `_framework/5bot/rules.md`, `personas/dev.md`, `personas/qa.md`
-- `dev-qa.md` (Developer Notes + Review Notes + Bug List for T6–T8)
+Sync source → clone (`5bot/*` + root stage files) → bump `marketplace.json` `5bot` entry → 2.1.0 + root landing `README.md` (v2.1.0) → commit as **Angry Munky** (noreply) → `git push origin main` (dual-push → private + public) → tag `v2.1.0` → `git push origin --tags` + `git push public --tags`. Then update the `5bot-plugin-published` memory.
 
-## Open Questions / Risks
+## Status of v2.1.0 tickets
 
-- Runtime verification (command loads, footer renders, Cowork `/compact`) is **not** done yet — it's the T9 staging-branch install
-- README command list + repo-root `marketplace.json` version still need updating (owned by T9)
-
-## Human Approval Required?
-
-**YES.** Final QA gate — approve the v1.3.0 features, then authorize the T9 release (version bump, docs, staging-branch verify, push).
+- ✅ T10 / T11 / T12 / T13 — APPROVED.
+- ▶ T14 — Phase 1 done + QA-approved; **at human gate** (approval authorizes the push).
 
 ## Next Bot + Instructions
 
-**Next: Human gate** (`/gate`). If APPROVED → execute **T9**: bump `plugin.json` + `marketplace.json` to 1.3.0, update README + root CLAUDE.md + MEMORY.md, push to a staging branch, install-verify, then merge to `main` (with explicit push authorization).
+→ `/gate` — present T14 for human acceptance. Approving authorizes the dual-push (+ resolves the 3 decisions above). Good seam to `/compact` first — canon is on disk.

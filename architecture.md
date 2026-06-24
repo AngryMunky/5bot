@@ -1,4 +1,4 @@
-# Architecture (v2.0.0 · v1.2.1 record retained below)
+# Architecture (v2.1.0 · v1.2.1 record retained below)
 
 ## Tech Stack
 
@@ -126,6 +126,72 @@ See `dev-qa.md` Backlog for the full ticket cards (T6–T9). Summary:
 - **T7 — F2 `/5bot-status`:** new read-only `commands/5bot-status.md`; brief 6-section snapshot (no Known Risks per OQ-2); 5 edge cases; reuses F3 successor logic.
 - **T8 — F1 context reminder:** skill defines reassurance + terse/minimal variants + self-judgment heuristic + guardrails; triggers in `handoff.md`/`gate.md` (terse, above F3) and `dev.md`/`qa.md` (minimal); handoff→gate and QA→gate suppression.
 - **T9 — v1.3.0 release:** bump `plugin.json` + `marketplace.json` (1.2.1→1.3.0), document `/5bot-status` + F1/F3 in README, sync `_framework/5bot/`, update root CLAUDE.md + MEMORY.md, commit + tag.
+
+---
+
+# v2.1.0 — Claude Design Integration (zip-first)
+
+> Build plan for the optional Claude Design **design-reference** step (Product gate 2026-06-22; refined at the UX gate to **zip-first** — the `.zip` download is the MVP path, live `claude_design` connector import is deferred). Native Claude Design only. Turns `ux.md` "v2.1.0" (Flow D, D1–D5) into tickets. Paths use the current `plugins/5bot/` layout.
+
+## Tech Stack (delta)
+Unchanged: Markdown-only plugin, plain-text state, no network integrations. **New interaction:** the workflow now reads a user-provided local `.zip` (Claude Design "Download zip instead") and its extracted contents. Extraction uses **host tools the agent already has** (PowerShell `Expand-Archive` on Windows; `unzip`/`tar` on Unix) — local file I/O, not a service integration, so the "no integrations / no external deps" stance holds.
+
+## Key decision — OQ-7: where the design lives (PROPOSED, confirm at gate)
+- Extracted design lives at **`design/<slug>/`** in the downstream project (`<slug>` = kebab-cased design file name; `Tag Hag.dc.html` → `design/tag-hag/`).
+- Keep the **original `.zip`** at `design/<slug>.zip` for provenance (pristine, re-extractable source).
+- **Primary artifact** Dev builds against = the extracted `…/<name>.dc.html`; the `ux.md` Design Reference block links it.
+- Rationale: `design/` is conventional and git-friendly; extracted HTML is diffable; the retained zip preserves the exact export.
+- **OQ-8 (minor):** create `design/` on-first-use (proposed) vs at `/5bot-init` → propose on-first-use (no empty-dir churn).
+
+## DRY placement (one home, like F1/F3)
+The **`five-bot` skill** (`skills/five-bot/SKILL.md`) is the single home for the **Design Reference procedure**: the block schema, the zip locate→extract→record steps (with the cross-platform extract note), and the guardrails ("`ux.md` is canon; design is a linked aid; never auto-build the whole design; capture is UX-only"). `commands/ux.md` (capture) and `commands/dev.md` (consume) carry only short triggers pointing at the skill.
+
+## Data Model — the Design Reference block (the contract)
+A new `## Design Reference (Claude Design)` section is written into the project's **`ux.md`** (canon). Schema:
+```
+## Design Reference (Claude Design)
+- Source:         Claude Design — <project URL>
+- File(s):        <Name>.dc.html
+- Import method:  fallback-zip            # MVP; "connector" reserved for the deferred enhancement
+- Original zip:   design/<slug>.zip
+- Local artifact: design/<slug>/<Name>.dc.html
+- Captured:       <YYYY-MM-DD>
+- Covers:         <which screens / flows this informs>
+- Note:           ux.md is canon; this design is a linked aid, not the spec.
+```
+No new state file, no schema enforcement — plain Markdown the Dev Bot reads.
+
+## System Architecture — the zip flow
+1. User downloads the design as a `.zip` from Claude Design and drops it in the project (anywhere; tells the bot the path).
+2. During `/ux`, the design-reference trigger fires → skill procedure: normalize the zip to `design/<slug>.zip`, extract to `design/<slug>/`, identify the primary `*.dc.html`.
+3. Bot writes the Design Reference block into `ux.md`. **No code is generated here.**
+4. Later, `/dev` on a ticket that cites the Design Reference reads the extracted `*.dc.html` (+ assets) and implements against it.
+
+The connector path (D2) is **not built** — documented as a deferred enhancement (T15) gated on OQ-6.
+
+## Implementation sequence
+`T10 (skill) → { T11 (/ux), T12 (/dev) parallel-ok } → T13 (docs/templates/sync) → T14 (release)`. T10 first because T11/T12 reference the skill's procedure; T11 and T12 touch different command files, so they can run in parallel after T10. T15 (connector enhancement) is deferred — not in this release.
+
+## v2.1.0 Assumptions
+- Claude Design's "Download zip instead" bundle contains a self-contained `*.dc.html` (+ assets) that's implementable offline.
+- The agent can extract a zip with host tools (cross-platform note in the skill — OQ-9).
+- Users commit `design/` to git (recommended, not enforced).
+- A plain-Markdown Design Reference block needs no validation.
+
+## v2.1.0 Open Questions
+- **OQ-7 (this stage):** `design/<slug>/` + retained `design/<slug>.zip`; primary artifact = the `.dc.html` — **confirm at gate.**
+- **OQ-8 (minor):** create `design/` on-first-use (proposed) vs at `/5bot-init`.
+- **OQ-9 (minor):** cross-platform extract — skill gives both PowerShell + unix commands; agent picks (proposed).
+- **OQ-6 (DEFERRED):** real `claude_design` connect/auth path per surface — only needed for the deferred connector enhancement (T15).
+
+## v2.1.0 Tickets
+See `dev-qa.md` Backlog (T10–T15). Summary:
+- **T10 — Skill: Design Reference procedure** (SKILL.md): block schema + locate/extract/record steps + guardrails. Foundation for T11/T12.
+- **T11 — `/ux` design-reference step** (commands/ux.md): optional Flow-D trigger → run the skill procedure → write the block; silent no-op when no design.
+- **T12 — `/dev` consumes the design** (commands/dev.md): if the ticket cites a Design Reference, read the linked `*.dc.html`; never auto-build the whole design.
+- **T13 — Docs, template & `_framework` sync:** README (zip workflow + `design/` convention), `templates/ux.md` optional-section note, sync personas/ux + dev to `_framework/5bot/`.
+- **T14 — v2.1.0 release:** bump `plugin.json` + root `marketplace.json` (2.0.0→2.1.0), root README/CLAUDE.md/MEMORY, `git push origin main` (dual-push → both repos), tag `v2.1.0` + push tags to both (per `PUBLISH.md`).
+- **T15 — (DEFERRED, post-MVP) connector import (D2):** the `claude_design` MCP path; gated on OQ-6. Not in v2.1.0.
 
 ---
 

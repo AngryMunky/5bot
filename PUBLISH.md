@@ -44,7 +44,7 @@ Members with auto-update on pick it up; others run `/plugin update`. Cowork user
 
 ## Keeping the two repos in sync
 
-The canonical clone (`C:\Users\capta\AppData\Local\Temp\5bot-plugin-release`) has `origin` set to push to **both** repo URLs, so a single `git push origin main` updates both. Fetch still comes only from the private repo. Manual fallback for the public mirror alone: `git push public main`.
+The canonical clone (in a local Windows Temp dir) has `origin` set to push to **both** repo URLs, so a single `git push origin main` updates both. Fetch still comes only from the private repo. Manual fallback for the public mirror alone: `git push public main`.
 
 ⚠️ The clone is in a Windows Temp folder. If it gets cleaned out, the dual-push config goes with it. Rebuild it:
 ```

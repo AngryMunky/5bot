@@ -1,4 +1,4 @@
-# Product (v2.0.0 · shipped baseline v1.2.1)
+# Product (v2.1.0 · shipped baseline v2.0.0)
 
 ## Product Name
 
@@ -187,3 +187,83 @@ These compound: the moment a user most needs to compact (long session) is exactl
 ---
 
 **Deferred backlog (unchanged, post-v1.3.0):** extensibility / custom roles, third-party integrations (GitHub, Jira, Slack), tooling (VS Code extension, git hooks), visual design tools.
+
+---
+
+# Proposed v2.1.0 — Claude Design Integration (optional)
+
+Human request: an **option** to bring design elements created in Claude Design (claude.ai/design) into the 5bot workflow, available for *future* projects (explicitly not this exchange's specific design). Trigger: the human pasted a Claude Design "Send to local coding agent" prompt; the terminal reported the `claude_design` MCP connector wasn't connected and couldn't access the shared design link.
+
+## ⚠️ Scope status — native carve-out, NOT a Figma-style integration (PROPOSED, needs gate approval)
+
+**Claude Design ≠ Figma.** Claude Design (claude.ai/design) is Anthropic's **first-party / native** design surface, reached through the `claude_design` MCP connector (`api.anthropic.com/v1/design/mcp`). Figma is a separate **third-party** product. Both are "design tools," but only Figma is the kind of external integration this project deliberately avoids.
+
+The baseline Out-of-Scope list **mis-bundled** the two — *"Visual design tools (Figma, Claude Design integration)"* — and the deferral (`decisions.md`, 2026-06-21, Q2) read *"only if natively in Claude Code/Cowork, no separate external tools."* That condition is precisely the **carve-out for the native case, i.e. Claude Design.** So v2.1.0 **activates the native carve-out for Claude Design only; Figma and other third-party tools stay out of scope.** Precedent already exists: `/ux` permits a Claude Design mock-up as an optional review aid (`ux.md` stays source of truth). Because the written list named "Claude Design integration" explicitly, we still record the human's go at the gate (anti-drift rule 2) — but as **correcting a mis-categorization**, not overturning the project's no-third-party-tools stance. **PROPOSED — not adopted until the gate approves.**
+
+## Problem
+
+The UX stage produces text-only specs in `ux.md`. Users increasingly design visually in Claude Design and want those artifacts to flow into implementation, so the Dev Bot builds against a real design rather than prose. Today there is no defined, reliable path:
+- No workflow step to attach or import a design artifact.
+- When users try Claude Design's "Send to local coding agent" prompt, it assumes the `claude_design` MCP connector is connected — and when it isn't (the human's situation), the import fails and shared design links are inaccessible. The user hits a dead end with no fallback.
+
+## Two layers (must be separated)
+
+**Layer A — Environment / connector (NOT plugin code).** Whether the `claude_design` MCP connector is connected and authorized is a property of the user's Claude *environment* (local Claude Code vs Cowork vs web), not something the 5bot plugin can install or force — the same lesson as `/plugin` being surface-specific. The plugin's deliverable here is **documentation / guidance** (how to connect and authorize, what to do per surface), not a code fix.
+
+**Layer B — 5bot workflow feature (the actual deliverable).** An **optional, opt-in** "design reference / import" step, most naturally at the UX stage, that:
+1. **Connector available:** import or reference the Claude Design project, save/link the artifact into the repo, and record it in `ux.md`.
+2. **Connector unavailable:** fall back to the connector-free path — the "Download zip instead" bundle, a saved exported file (`*.dc.html` / HTML) dropped into the repo, or simply a referenced design URL — so the pipeline **never hard-blocks**.
+
+`ux.md` stays canon; the design is a linked, versioned artifact.
+
+## Target users
+
+Existing 5bot users (indie devs, small teams) who design in Claude Design and want those designs to drive implementation — especially Cowork / desktop users, where connector availability differs from the local CLI.
+
+## Requirements (proposed)
+
+- **R1 — Opt-in only.** Users who don't use it see no change to the core flow (default off).
+- **R2 — UX-stage home.** The design reference is captured at UX; the Dev Bot consumes the recorded artifact when implementing the relevant ticket.
+- **R3 — Graceful degradation.** If the connector isn't connected, detect/state it plainly and route to the fallback; never block a gate.
+- **R4 — `ux.md` stays source of truth.** Any design artifact is exported into the repo and linked (consistent with the existing `/ux` mock-up rule).
+- **R5 — Document both paths.** The plugin documents connector setup AND the fallback (README / `/ux` guidance), tool-neutral about surface differences.
+
+## MVP scope
+
+- Add an **optional design-reference step** to the UX stage capturing `{Claude Design project URL, file name, and — if available — an exported local copy}` into `ux.md`.
+- Provide **both paths** (connector import + zip/file fallback) with clear guidance on when each applies.
+- Dev Bot reads the linked artifact when implementing the relevant ticket.
+
+## Out of scope (this round)
+
+- Auto-generating or editing designs from inside 5bot (round-trip). Import / reference only.
+- Non-Claude design tools (Figma, Sketch, etc.) — Claude Design only for MVP.
+- Auto-implementing a whole design without passing through the normal UX → Architect → Dev gates.
+- Making the connector work where the host environment doesn't support it (Layer A is documented, not engineered).
+
+## Priority & versioning
+
+New, additive, opt-in feature that doesn't change the core gate flow → **MINOR bump, v2.1.0.**
+
+## Success criteria
+
+- A 5bot user can, by the UX gate, attach a Claude Design artifact the Dev Bot can later implement against.
+- When the connector is unavailable, the user gets a clear, working fallback instead of a dead end.
+- Users who don't want the feature are unaffected.
+- Guidance is accurate across local Claude Code and Cowork (surface differences called out).
+
+## Risks
+
+1. **Connector availability varies by surface** (the human's exact pain). *Mitigation:* the feature must not depend on the connector; the fallback is first-class.
+2. **Over-scoping into visual-design tooling** — the project's #1 risk. *Mitigation:* import/reference only; no design authoring; Claude Design only.
+3. **`claude_design` MCP API / auth unknown and possibly unstable.** *Mitigation:* Architect confirms feasibility; design behind a thin "attach artifact" abstraction so the fallback works regardless.
+4. **Source-of-truth confusion** (is the design or `ux.md` canon?). *Mitigation:* `ux.md` is canon; the design is a linked aid (reuse the existing `/ux` rule).
+
+## Assumptions & open questions
+
+- **ASSUMPTION:** the UX stage is the right home (design as a UX artifact), consistent with the existing `/ux` mock-up note.
+- **OQ-1 (gate, blocking):** Approve reversing the Out-of-Scope decision to bring Claude Design integration in-scope as v2.1.0? Required before UX.
+- **OQ-2:** Connector-first with zip/file fallback, or **fallback-first** for MVP (document the manual zip/HTML path now; treat live connector import as the stretch) — given the connector isn't reliably available in the user's environment today?
+- **OQ-3:** Canonical stored form of an imported design — design URL only, exported `*.dc.html`/HTML committed to the repo, or the full zip bundle? (Affects portability / version control.)
+- **OQ-4 (feasibility → Architect):** Is the `claude_design` MCP connector available and authorizable in the user's target environment(s)? Is `/design-login` a real, available command there? Confirm at Architect; MVP must degrade gracefully regardless.
+- **OQ-5:** Allow the design-reference step at the Dev stage directly too, or UX-only for MVP?

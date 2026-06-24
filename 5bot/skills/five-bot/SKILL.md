@@ -79,3 +79,38 @@ Guardrails (against nagging): at most once per session (twice only if the user k
 
 ## /5bot-status (F2)
 A read-only orientation command. Reads `project-state.md` (canon), the newest `decisions.md` block, and `handoff.md`; prints a brief snapshot — Stage, Active ticket, Last decision, Open questions (resolved collapsed to a count), exactly one recommended next command (using the F3 verdict map above), and a freshness footer ending "safe to /compact". ~10 lines, no Known Risks, writes nothing. Full spec and edge cases live in `commands/5bot-status.md` and `ux.md`.
+
+## Design Reference (Claude Design import)
+
+Optional design-reference step at the UX stage. Lets `/ux` optionally capture a Claude Design `.zip` export into the project as a linked artifact. The procedure lives here once (DRY); `/ux` and `/dev` carry only short triggers pointing at this section.
+
+**Design Reference block schema** (written into `ux.md`):
+```
+## Design Reference (Claude Design)
+- Source:         Claude Design — <project URL>
+- File(s):        <Name>.dc.html
+- Import method:  fallback-zip            # MVP; "connector" reserved for deferred enhancement (T15)
+- Original zip:   design/<slug>.zip
+- Local artifact: design/<slug>/<Name>.dc.html
+- Captured:       <YYYY-MM-DD>
+- Covers:         <which screens / flows this informs>
+- Note:           ux.md is canon; this design is a linked aid, not the spec.
+```
+
+**Zip procedure** (`/ux` capture flow):
+1. User provides Claude Design `.zip` file path or pastes a "Send to local coding agent" prompt (parse project URL + file name from it).
+2. If only a URL available (no zip yet): record `fallback-url-only` reference and recommend exporting a zip for durability. Never block.
+3. Locate the user's `.zip` file; move/copy it to `design/<slug>.zip` (where `<slug>` = kebab-cased design file name, e.g., `Tag Hag.dc.html` → `design/tag-hag/`).
+4. Extract to `design/<slug>/`:
+   - **Windows / PowerShell:** `Expand-Archive -Path "design/<slug>.zip" -DestinationPath "design/<slug>/"`
+   - **Unix / macOS:** `cd design && unzip -d <slug> <slug>.zip` OR `cd design && tar -xzf <slug>.tar.gz -C <slug>/` (agent picks per OS and file type)
+5. Identify the primary `*.dc.html` in the extracted folder; if multiple `.dc.html` files, list them and ask the user which is primary (or use the first by name).
+6. Write the Design Reference block into `ux.md` with real paths and today's date.
+
+**Guardrails:**
+- `ux.md` is canon; the design is a linked aid, never a spec replacement.
+- Never auto-generate the whole design from the artifact; capture is UX-only.
+- Dev Bot may read the design artifact when a ticket cites it, but must implement only the ticket's scope.
+- Zip extraction and asset loading are local file I/O only; no external service integrations.
+- Import-method values: `fallback-zip` (MVP) or `fallback-url-only` (URL without zip). `connector` is reserved for the deferred `claude_design` MCP enhancement (T15, post-MVP, gated on OQ-6).
+- If the linked artifact is missing or stale, fall back to `ux.md` text spec; never block.

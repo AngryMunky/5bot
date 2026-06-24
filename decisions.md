@@ -2,6 +2,71 @@
 
 <!-- Decisions and human-gate approvals. Newest on top. -->
 
+## Approval: QA Gate — T14 (v2.1.0 release)
+
+- Date / By / Stage: 2026-06-23 / Human / QA Gate (release authorization)
+- Status: APPROVED
+- Decision: v2.1.0 release approved and the dual-push authorized. Per the gate's three decisions, a plain APPROVED resolves them as: (1) **delete** the orphaned root `.claude-plugin/plugin.json` (stale @ v1.2.1, off the install path); (2) **publish as-is**, with the machine-specific Temp clone path sanitized out of `PUBLISH.md` before pushing; (3) **re-stamp** the `product.md`/`architecture.md`/`ux.md` headers to v2.1.0 for consistency.
+- Release contents: `plugin.json` 2.0.0 → 2.1.0 + matching `marketplace.json` `5bot` entry; READMEs (plugin + root landing) + stage headers re-stamped; v2.1.0 feature = optional Claude Design design-reference. Pushed from the canonical clone as **Angry Munky** (noreply), `git push origin main` (dual-push → private `5bot-plugin` + public `5bot`), tag `v2.1.0` to both — per `PUBLISH.md`.
+- Consequences: v2.1.0 ships. All v2.1.0 tickets (T10–T14) complete. Open follow-up remains: the recommended `/ux` re-sync of `ux.md` D2–D5 design-era copy. T15 (connector import) stays deferred.
+
+## Approval: QA Gate — T13 (docs / templates / `_framework` sync)
+
+- Date / By / Stage: 2026-06-23 / Human / QA Gate
+- Status: APPROVED
+- Decision: T13 approved (QA verdict was APPROVED WITH NOTES; human accepted as-is). All four ACs met — README "Optional: a Claude Design reference" section (zip workflow + `design/` convention + "ux.md canon; native Claude Design only, Figma out"); template comment (v0.1.1); `_framework` personas synced (ux.md/dev.md → v1.2.0); roster unchanged (9 commands, no phantom). The single recorded deferred fix (project `ux.md` D4 import-method → `fallback-zip`) landed. Reviewed via an independent 3-lens adversarial pass + a scope-adjudication agent (confirmed: approve with notes, do not bounce).
+- Notes carried as follow-ups (non-blocking): (1) **recommended `/ux` re-sync** of project `ux.md` D2–D5 design-era copy to the as-built SKILL.md schema (D4 missing `Original zip:` + stale flat `Local artifact:` path; D2/D3/D5 still frame the connector as a live branch vs deferred-to-T15) — the shipped contract (SKILL.md) is correct, only the design doc lags; (2) optional polish to README shared-files glossary (~line 227) + `commands/ux.md` line 12 double-story. Tracked in `project-state.md` → Open Follow-ups.
+- Also this session (human-approved bookkeeping): pruned `project-state.md` (removed a stale duplicate Active-Ticket block; collapsed resolved Open Questions to a pointer) to cut always-loaded canon size.
+- Consequences: All v2.1.0 build tickets except release are now APPROVED (T10/T11/T12/T13). Proceed to **`/dev T14`** — the release (version bump 2.0.0→2.1.0, mirror to repo-root marketplace.json, root docs, **dual-push to both repos + tag — requires explicit human authorization** for the public + `main` push).
+
+## Approval: QA Gate — T12 (`/dev` consumes the Design Reference)
+
+- Date / By / Stage: 2026-06-23 / Human / QA Gate
+- Status: APPROVED
+- Decision: T12 (`/dev` consume trigger) approved. Reviewed via adversarial 4-lens QA workflow (acceptance-criteria, cross-file consistency, guardrails/anti-drift, edge-cases; each finding verified by an independent refuter). Deliverable met all 4 ACs on first pass; review caught one real cross-file inconsistency (T12 AC text wildcard `*.dc.html` vs spec/impl `<Name>.dc.html`) + one clarity nit (implicit no-op), both fixed via a single auto-bounce; one finding refuted; one nit deferred to T13.
+- Consequences: All three v2.1.0 code tickets (T10/T11/T12) APPROVED. Proceed to `/dev T13` (docs / templates / `_framework` sync). T13 carries the deferred item: tighten `ux.md` D4 import-method example to `fallback-zip`.
+
+## Approval: QA Gate — T11 (`/ux` design-reference step)
+
+- Date / By / Stage: 2026-06-23 / Human / QA Gate
+- Status: APPROVED
+- Decision: T11 (`/ux` design-reference step) approved. QA found zero bugs, all 7 acceptance criteria met. Optional trigger added to `commands/ux.md`; three input paths (URL, "Send to local coding agent" prompt, zip path); references SKILL.md procedure (no duplication); silent no-op when no design (zero friction); URL-only fallback documented.
+- Consequences: Proceed to `/dev T12` (`/dev` consumes the Design Reference). T12 depends only on T10.
+
+## Approval: QA Gate — T10 (Design Reference procedure)
+
+- Date / By / Stage: 2026-06-23 / Human / QA Gate
+- Status: APPROVED
+- Decision: T10 (Skill: Design Reference procedure) approved. QA found zero bugs, all acceptance criteria met, no changes needed. Procedure is canonical, self-contained, ready for T11/T12 to reference. DRY placement confirmed.
+- Consequences: Proceed to `/dev T11` (`/ux` design-reference step). T12 parallel-ok after T11.
+
+## Approval: Architect Gate — v2.1.0 Claude Design Integration
+
+- Date / By / Stage: 2026-06-23 / Human / Architect Gate
+- Status: APPROVED
+- Decision: v2.1.0 Architect build plan approved. **Storage (OQ-7):** `design/<slug>/` for extracted contents + `design/<slug>.zip` for pristine source; primary artifact = `.dc.html` linked from `ux.md`. **On-first-use (OQ-8):** create `design/` when `/ux` first imports a zip (not at `/5bot-init`). **Cross-platform extract (OQ-9):** skill provides both PowerShell + unix commands; agent picks per OS. Connector deferred (T15, post-MVP, OQ-6 non-blocking).
+- Build sequence: **T10 → { T11, T12 parallel } → T13 → T14**. T15 stays deferred.
+- Consequences: Proceed to Dev on T10 (skill: Design Reference procedure).
+
+## Approval: UX Gate — v2.1.0 Claude Design design-reference step
+
+- Date / By / Stage: 2026-06-22 / Human / UX Gate
+- Status: APPROVED WITH CHANGES
+- Decision: UX design (Flow D, screens D1–D5) approved. **Change/direction:** the **`.zip` download from Claude Design is the first-class MVP path** (*"I can download the design as a `.zip` — go with that"*). The `claude_design` connector import is a **progressive enhancement deferred past MVP**, so the MVP has **no dependency on the connector**.
+- Resolved OQs: OQ-2 = zip-first (fallback-first); OQ-3 = committed `.zip` (+ extracted `*.dc.html`) is the artifact, linked from a `ux.md` Design Reference block (location ~`design/`, Architect finalizes); OQ-5 = UX-only capture.
+- To Architect: OQ-6 (connector connect/auth path) now **NON-blocking for MVP**; OQ-7 (artifact location/format).
+- Consequences: proceed to `/architect` to scope v2.1.0 tickets around the zip path (export → drop `.zip` in repo → `/ux` records a Design Reference block → Dev builds against it); document the connector-import path as a later enhancement.
+
+## Approval: Product Gate — v2.1.0 Claude Design Integration (optional)
+
+- Date / By / Stage: 2026-06-22 / Human / Product Gate
+- Status: APPROVED
+- Decision: Bring **Claude Design integration in-scope as v2.1.0** (optional, opt-in). Claude Design (first-party / native, via the `claude_design` MCP connector) is distinct from third-party **Figma** — this **corrects a prior mis-bundling** on the Out-of-Scope list, not a reversal of the no-third-party-tools stance. Figma and other third-party design tools **stay out of scope**.
+- Scope: opt-in "design-reference" step at the UX stage; import/reference a Claude Design artifact when the `claude_design` connector is available, with a connector-free fallback (zip / exported `*.dc.html` / design URL) so the pipeline never hard-blocks. `ux.md` stays source of truth. New additive feature → MINOR bump, **v2.1.0**.
+- OQ-1 (blocking): RESOLVED — APPROVED.
+- Carried forward: OQ-2 (connector-first vs fallback-first), OQ-3 (canonical stored form), OQ-5 (Dev-stage too vs UX-only) → resolve at UX; OQ-4 (connector availability / is `/design-login` real?) → Architect feasibility.
+- Consequences: move Claude Design out of the Out-of-Scope list (now in-scope, v2.1.0); proceed to `/ux` to design the optional design-reference step.
+
 ## Decision: Rebrand install id to `5bot` → release as v2.0.0
 
 - Date / By / Stage: 2026-06-21 / Human / Release (T9)
