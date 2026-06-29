@@ -328,3 +328,212 @@ Per the `/ux` protocol, a Claude Design mock-up of this screen list could serve 
 - ✓ **OQ-2 / OQ-3 / OQ-5 — RESOLVED at UX gate (2026-06-22):** `.zip` download is the first-class MVP path; the committed `.zip` (+ extracted `*.dc.html`) is the artifact, linked from a `ux.md` Design Reference block; UX-only capture. Connector import deferred to a progressive enhancement.
 - **OQ-6 (→ Architect, now NON-blocking for MVP):** real connect/authorize path for `claude_design` per surface (is `/design-login` a real command in Code/Cowork/web?) — only needed when the connector-import enhancement is built; the MVP zip path doesn't depend on it.
 - **OQ-7 (→ Architect, minor):** default repo location + format for committed design artifacts (proposed `design/`).
+
+---
+
+# UX (v2.2.0 — Usage-Aware Status Reporting)
+
+> ⛔ **SUPERSEDED (2026-06-29).** This API-usage design was built then reverted at the QA gate (model can't read usage %). v2.2.0 was re-scoped to **git-based sync-awareness**; see "UX (v2.2.0 re-scoped — Sync-Awareness via read-only git status)" below. Retained for history.
+
+> Canonical UX artifact the Architect reads for v2.2.0. Designs the experience of **read-only API usage status** integrated into the `/5bot-status` command. Approved at Product gate (2026-06-26) as a soft personal preference — informational, non-blocking usage visibility.
+
+## Primary User Goal (v2.2.0)
+
+**Know current API hourly usage** without leaving the workflow, so you can decide whether to continue or pause before the next bot command.
+
+## Main User Flow (v2.2.0) — Flow E
+
+User at any point in the pipeline:
+1. Runs `/5bot-status` (existing re-orientation command).
+2. Sees a **read-only API usage line** showing current hourly quota consumption (e.g., "API hourly usage: 76% (resets at 15:00 UTC)").
+3. Uses that info to decide: continue normally, or pause and resume later.
+
+**No workflow change.** The line is informational; it never blocks execution. User decides the action.
+
+## Screen List (v2.2.0)
+
+| # | Screen | New / Mod | Type |
+|---|--------|-----------|------|
+| E1 | `/5bot-status` usage line | Modified S1 | Command output section |
+
+## Navigation Model (v2.2.0)
+
+The usage line is a **read-only, optional data field** appended to `/5bot-status`. It adds one line between "Active ticket" and "Last decision" (or alternative position per Architect). No new command, no gate, no fork. Silent omission if data unavailable (no error, no placeholder).
+
+## Screen-by-Screen Detail (v2.2.0)
+
+### E1 — `/5bot-status` usage line (modification to S1)
+
+**Location in output:** After "Active ticket" and before "Last decision" (or after all core sections, just before the final "→ Run" footer — Architect decides based on readability).
+
+**Format:**
+```
+Usage:  API hourly usage: 76% (resets at 15:00 UTC)
+```
+
+**Data displayed:**
+- **Percentage:** Current usage as a simple integer percentage (0–100%) of the hourly rolling window.
+- **Reset time:** UTC time (HH:MM format) when the hourly quota resets, so users know when it's safe to resume. Example: "15:00 UTC" (not relative like "in 23 minutes" — UTC is unambiguous).
+- **Tone:** Neutral, factual. No warning emoji (⚠️), no color, no urgency. Just the numbers.
+
+**Fallback / unavailable:**
+- If the host environment doesn't expose API usage data (no MCP context, API unavailable, surface doesn't support it): **silently omit the line.** Print nothing, no placeholder, no error. The command succeeds either way.
+
+**Example output (with usage):**
+```
+5bot status — 5bot (project-state v2.2.0)
+Read-only snapshot. Nothing was modified. Re-run any command to reload from disk.
+
+Stage:            Architect (approving v2.2.0: usage-aware status line in /5bot-status)
+Active ticket:    None yet.
+Usage:            API hourly usage: 76% (resets at 15:00 UTC)
+Last decision:    Product Gate — v2.2.0 Usage-Aware Status — APPROVED (2026-06-26 / Human)
+Open questions:   3 blocking (see product.md) — resolved by Architect.
+
+→ Run /architect  — Confirm API feasibility and decide reset-time format.
+
+State last updated 2026-06-26 / Product gate APPROVED → UX stage.
+Canon is on disk (project-state.md · decisions.md · handoff.md · stage files) — safe to /compact.
+```
+
+**Example output (usage unavailable):**
+```
+5bot status — 5bot (project-state v2.2.0)
+Read-only snapshot. Nothing was modified. Re-run any command to reload from disk.
+
+Stage:            Architect (approving v2.2.0: usage-aware status line in /5bot-status)
+Active ticket:    None yet.
+Last decision:    Product Gate — v2.2.0 Usage-Aware Status — APPROVED (2026-06-26 / Human)
+Open questions:   3 blocking (see product.md) — resolved by Architect.
+
+→ Run /architect  — Confirm API feasibility and decide reset-time format.
+
+State last updated 2026-06-26 / Product gate APPROVED → UX stage.
+Canon is on disk (project-state.md · decisions.md · handoff.md · stage files) — safe to /compact.
+```
+(No "Usage" line if data unavailable.)
+
+## Usability Concerns (v2.2.0)
+
+1. **Silent fallback is critical.** If the API query fails or the host doesn't expose usage, omit the line completely. Never show "Usage: unavailable" or error. The command must always succeed.
+2. **Placement matters.** The line should sit near the "active ticket" / "decision" context (mid-output), not at the end, so users see it before deciding what to run next.
+3. **No alarm.** Keep tone neutral; numbers only. This is informational for planning, not a warning.
+4. **Reset time clarity.** UTC is unambiguous; a relative format ("in 15 minutes") is tempting but fragile if the user copies/pastes the output later.
+
+## Assumptions (v2.2.0)
+
+- **ASSUMPTION:** API usage data is available via Claude Code MCP context, host environment variable, or Claude.ai dashboard API (never via explicit user-managed credentials in project files).
+- **ASSUMPTION:** The "hourly" window is Claude API's rolling 1-hour limit. Reset time = current hour + 60 minutes.
+- **ASSUMPTION:** Users can interpret "76% of hourly quota" without further explanation.
+- **ASSUMPTION:** Silent omission when unavailable is acceptable (no user-facing fallback needed).
+
+## Open Questions (v2.2.0)
+
+**OQ-1 (Data source / feasibility):** Can Claude Code expose API usage via MCP, environment variable, or host context? Is there a quota / usage endpoint available, or is the data dashboard-only? → **Architect to confirm.**
+
+**OQ-2 (Reset time format):** Show "15:00 UTC" (unambiguous) or "~15 minutes from now" (human-friendly but fragile)? → **Architect to decide.** Recommend UTC for durability.
+
+**OQ-3 (Exact placement):** After "Active ticket" (context-first) or at the end of core sections (least intrusive)? → **Architect to decide** based on the final S1 layout. Recommend after Active ticket.
+
+---
+
+# UX (v2.2.0 re-scoped — Sync-Awareness via read-only git status)
+
+> Supersedes the API-usage UX above (reverted at the QA gate). Designs the read-only **git-awareness line** in `/5bot-status`, approved at the re-scope Product gate (2026-06-29). Read-only, no network, no mutation, neutral tone, plain Markdown.
+
+## Primary User Goal (v2.2.0 re-scoped)
+
+See at a glance, in `/5bot-status`, whether the local copy is in sync with its remote and whether there are uncommitted changes — so you catch a stale-copy / unsaved-work situation **before** acting on it.
+
+## Main User Flow — Flow E (re-scoped)
+
+1. User runs `/5bot-status`.
+2. If the project is a git repo, the snapshot's freshness footer includes one read-only **git line** (sync + cleanliness).
+3. User reads it and decides what to do — purely informational; 5bot suggests no action and never touches the repo.
+4. If not a git repo (or git unavailable), the line is silently omitted; the rest of the snapshot is unchanged.
+
+## Screen List (v2.2.0 re-scoped)
+
+| # | Screen | New / Mod | Type |
+|---|--------|-----------|------|
+| E1 | `/5bot-status` git line | Modified S1 (freshness footer) | Command output line |
+
+## Navigation Model
+
+A single read-only line appended to the **freshness footer** of `/5bot-status`. No new command, no gate, no fork. The line is **informational only** — it does **not** change the recommended next command (which stays above the footer). Silent omission when not a git repo.
+
+## Placement decision (OQ-2, resolved here)
+
+**In the freshness footer, as its last line** — after "State last updated…" and "Canon is on disk… safe to /compact." Rationale: git/sync status answers *"how current/trustworthy is my local copy?"* — the same question the freshness footer already addresses (last-updated + canon-on-disk). Grouping them keeps all "state freshness/trust" signals together and keeps the actionable **→ next command** prominent (footer stays last). (The old API-usage line sat mid-snapshot to inform the next-command decision; for git-awareness the "trust/freshness" framing fits the footer better.)
+
+## Screen-by-Screen Detail
+
+### E1 — `/5bot-status` git line
+
+Appended as the final line of the freshness footer. Format:
+```
+git: <branch> · <sync state> · <cleanliness>
+```
+- **branch:** current branch name; `detached HEAD` if detached.
+- **sync state** (vs upstream, from already-fetched refs — labeled, because the command does NOT fetch): `N behind origin (last fetch)` · `M ahead` · `N behind, M ahead (last fetch)` · `even with origin (last fetch)` · `no upstream` (omit ahead/behind when none).
+- **cleanliness:** `clean` or `uncommitted changes` (from `git status`).
+
+**Example (footer with git line):**
+```
+State last updated 2026-06-29 / Product gate APPROVED → UX.
+Canon is on disk (project-state.md · decisions.md · handoff.md · stage files) — safe to /compact.
+git: main · 2 behind origin (last fetch) · uncommitted changes
+```
+
+## Empty / Error / Success States
+
+- **Git repo, has upstream:** full line (branch · sync · cleanliness). **Success.**
+- **Git repo, no upstream:** `git: <branch> · no upstream · <cleanliness>` (omit ahead/behind).
+- **Detached HEAD:** `git: detached HEAD · <cleanliness>` (omit ahead/behind).
+- **Even + clean:** `git: <branch> · in sync · clean` (terse all-good render; still shown — consistent sync indicator).
+- **Not a git repo / git unavailable / any git error:** **omit the line entirely** — no error, no placeholder, command still succeeds (silent no-op).
+
+## Forms & Fields
+
+None. The git line is pure read-only output; no inputs.
+
+## Buttons & Actions
+
+None new. The line is informational; if the user wants to act (commit / pull), they do so in their own terminal — 5bot neither prompts nor performs it.
+
+## Usability Concerns
+
+1. **Informational, never advisory (highest).** The line states facts; it does NOT tell the user to pull/commit and does NOT change the recommended next command. (A soft nudge is out of scope per Product.)
+2. **Honest staleness.** "(last fetch)" signals that ahead/behind reflects the last fetch, not live — the command never fetches. Prevents false confidence.
+3. **Portability / no noise.** Silent omission when not a git repo (5bot doesn't require git); no errors, no "n/a".
+4. **Brevity.** Exactly one line; keeps `/5bot-status` to ~11 lines. Don't expand into multi-line git detail.
+5. **Neutral tone, plain Markdown, no emoji** — consistent with the rest of the snapshot; renders identically in terminal / web / Cowork.
+6. **Privacy.** Only local branch / sync / dirty facts; no remote URLs, emails, or identifying info.
+
+## Assumptions (v2.2.0 re-scoped)
+
+- Reading local git state is available via the host shell the agent already uses (exact commands → Architect).
+- `/5bot-status` is often run inside a git checkout; when not, it silently no-ops.
+
+## Open Questions (v2.2.0 re-scoped)
+
+- ✓ **OQ-2 (placement / format): RESOLVED here** — freshness-footer line, format above.
+- **OQ-3 (→ Architect):** exact no-network commands (`git rev-list --left-right --count @{u}...HEAD`, `git status --porcelain`, branch via `git symbolic-ref`/`rev-parse`), detached / no-upstream handling, cross-platform invocation, and graceful omission on any git error.
+- **OQ-4 (minor, deferred):** a one-time `/5bot-init` nudge to set up git — Product deferred; not designed here.
+
+## Visual aid for this gate (optional)
+
+Per the `/ux` protocol, a Claude Design mock-up could illustrate the footer line — but it's a single text line; `ux.md` is the canonical and sufficient artifact here. No mock-up needed.
+
+---
+
+## Assumptions
+
+- `/compact` is the relevant Claude Code command; phrasing also says "or start a fresh session" so it stays meaningful if `/compact` behaves differently in Cowork (to be verified at QA).
+- Bots can self-assess drift well enough for the heuristic; if they over- or under-fire in practice, only the heuristic text needs tuning (no structural change).
+- Plain-Markdown rendering is safe across terminal / web / Cowork.
+
+## Open Questions — RESOLVED at UX gate (2026-06-21)
+
+- **OQ-1:** ✓ **RESOLVED — bot self-judgment.** The "long" heuristic (4 drift signals + guardrails) is the shipped mechanism; it lives in the Dev/QA personas and the F1 block spec.
+- **OQ-2:** ✓ **RESOLVED — keep `/5bot-status` brief.** No Known Risks section; it stays at stage / active ticket / last decision / open questions / one next command / freshness footer.

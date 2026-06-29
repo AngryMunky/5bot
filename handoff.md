@@ -4,27 +4,33 @@
 
 ## Stage Completed
 
-QA — T14 (v2.1.0 release) Phase 1 reviewed. Phase 2 (push) is gated.
+QA — v2.2.0 T2 (git-awareness line in `/5bot-status`)
 
-## QA Verdict
+## Bot
 
-**✅ APPROVED WITH NOTES.** Phase 1 (version + doc bumps in the working source) verified correct and version-consistent. Phase 2 (the irreversible dual-push to the **public** mirror + `main`) is correctly **not executed** — the human gate is the explicit authorization. Full review in `dev-qa.md` → Review Notes → T14.
+QA Bot (after Architect spec + Dev impl; Architect gate skipped per 2-gate default)
 
-## Decisions needed at the gate (before the push)
+## What Changed
 
-1. **Orphaned root `.claude-plugin/plugin.json` @ v1.2.1** — off the install path (marketplace → `5bot/`), stale since pre-v2.0.0. **Recommend deleting** (or bump to 2.1.0). Not a functional blocker.
-2. **PRIVACY — confirm publishing internal docs to the PUBLIC mirror.** Root-tracked → pushed public: `dev-qa.md` (full QA/ticket history), `decisions.md`, `handoff.md`, `project-state.md` (incl. the Deployment note with the private/public strategy + Temp clone path + internal task IDs). Established at v2.0.0, but expanded now. Confirm it's intended, or exclude internal docs.
-3. **Optional:** re-stamp `product.md`/`architecture.md`/`ux.md` headers v2.0.0 → v2.1.0 for consistency (canonical version already bumped).
+- Architect specced the read-only, no-network git commands; Dev implemented the git line in `commands/5bot-status.md`; QA reviewed.
+- Git line: `git: <branch> · <sync ("last fetch")> · <clean | uncommitted changes>`, in the freshness footer; silent no-op when not a repo; informational only; never networks/mutates.
+- QA verdict: **APPROVED WITH NOTES** — unlike the reverted API-usage T1, this signal is genuinely knowable (git is local), so it displays. Only note: ahead/behind reflects last fetch (labeled).
 
-## Phase 2 (on authorization), per PUBLISH.md
+## Artifacts Created / Updated
 
-Sync source → clone (`5bot/*` + root stage files) → bump `marketplace.json` `5bot` entry → 2.1.0 + root landing `README.md` (v2.1.0) → commit as **Angry Munky** (noreply) → `git push origin main` (dual-push → private + public) → tag `v2.1.0` → `git push origin --tags` + `git push public --tags`. Then update the `5bot-plugin-published` memory.
+- `commands/5bot-status.md` — git line implemented (+ "Git line" spec block)
+- `architecture.md` — git spec (old usage arch SUPERSEDED); `ux.md` — git UX (old usage UX SUPERSEDED); `dev-qa.md` — T2 ticket + Dev Notes + QA Review
+- `decisions.md` — UX gate APPROVED; `project-state.md` — Active Ticket, Last Updated
 
-## Status of v2.1.0 tickets
+## Open Questions / Risks
 
-- ✅ T10 / T11 / T12 / T13 — APPROVED.
-- ▶ T14 — Phase 1 done + QA-approved; **at human gate** (approval authorizes the push).
+- ⚠️ Runtime not testable here (Markdown plugin) — staging smoke test pending (clean / behind / dirty / no-upstream / detached / non-repo → omit).
+- 🟡 ahead/behind = as of last fetch (labeled) — accepted.
+
+## Human Approval Required?
+
+QA gate **APPROVED** (2026-06-29). Released — no further approval needed.
 
 ## Next Bot + Instructions
 
-→ `/gate` — present T14 for human acceptance. Approving authorizes the dual-push (+ resolves the 3 decisions above). Good seam to `/compact` first — canon is on disk.
+**Released v2.2.0** — synced working copy → publish clone, bumped `plugin.json` + `marketplace.json` to 2.2.0, updated READMEs, committed, **dual-pushed to both repos**, tagged `v2.2.0`. Recommended next: staging smoke test of the git line across surfaces (Code/Cowork). The v2.2.0 cycle is complete.

@@ -1,4 +1,4 @@
-# Project State (v2.1.0)
+# Project State (v2.2.0)
 
 > Canon. Every bot reads this first. Keep it short — detail lives in the stage files.
 
@@ -16,7 +16,9 @@ Individual developers and small teams (1–10 people) using Claude Code. Indie h
 
 ## Current Active Ticket
 
-**v2.1.0 RELEASED 2026-06-23.** All tickets T10–T14 complete. v2.1.0 ships the optional Claude Design design-reference feature. T14 (release) approved at the QA gate: `plugin.json` + `marketplace.json` `5bot` entry → 2.1.0; READMEs + stage headers re-stamped; orphaned root `.claude-plugin/plugin.json` removed; dual-pushed (private `5bot-plugin` + public `AngryMunky/5bot`) + tagged `v2.1.0` from the canonical clone as Angry Munky. Open follow-up: recommended `/ux` re-sync of `ux.md` D2–D5 design-era copy. T15 (connector import) deferred. (Prior: v2.0.0 `main` `dbb0e1c`, tagged; installs as `5bot@lawson-design`.)
+**Released v2.2.0.** Git-awareness line (read-only git status in `/5bot-status`) shipped — synced to the publish clone, `plugin.json` + `marketplace.json` bumped to 2.2.0, committed, **dual-pushed to both repos** (private `5bot-plugin` + public `5bot`), tagged `v2.2.0`. T2 done. Recommended: staging smoke test of the git line across surfaces (Code/Cowork). Open follow-ups: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
+
+(Prior: **Architect gate APPROVED** 2026-06-26. **UX gate APPROVED** 2026-06-26. **Product gate APPROVED (revised scope)** 2026-06-26.)
 
 ## Approved MVP Features (v1.2.0)
 
@@ -52,7 +54,9 @@ Claude Code plugin architecture
 
 ## Open Follow-ups
 
-T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix). *Proposed (pending T13 gate):* a `/ux` re-sync of `ux.md` D2–D5 to the as-built design schema.
+- T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
+- **`/ux` re-sync** of `ux.md` D2–D5 design-era copy to the as-built SKILL.md schema (non-blocking; recommended at the v2.1.0 QA gate).
+- **PROPOSED → needs `/product` (suggest v2.2.0) — git-awareness.** *Problem:* across machines/sessions a user can start on a stale local copy and diverge (cf. the T14 release reconciliation). *Scope question for Product:* does local git-awareness count as the approved out-of-scope "External integrations (GitHub/Jira/Slack)", or is it acceptable local-tooling support? *Recommended minimal shape:* a **read-only**, best-effort git line in `/5bot-status` (e.g. "git: N behind origin · uncommitted changes") + an optional one-time `/5bot-init` nudge — **never** auto-`git pull`, **silent no-op when git/remote absent** (portability), never mutate the repo. Route: `/product` → `/architect` → ticket → gate. (Dev-drafted 2026-06-23; not approved scope.)
 
 ## Deployment
 
@@ -79,4 +83,4 @@ See `product.md` for mitigation strategies.
 
 ## Last Updated / By
 
-2026-06-23 / Dev Bot — canon prune (removed stale duplicate Active-Ticket block; collapsed resolved Open Questions to a pointer). T13 still at QA gate.
+2026-06-29 / Released v2.2.0 — git-awareness line shipped; dual-pushed to both repos + tagged.

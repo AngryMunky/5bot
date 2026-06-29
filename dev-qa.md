@@ -1,4 +1,4 @@
-# Dev & QA (v2.0.0)
+# Dev & QA (v2.2.0)
 
 ## Backlog / Tickets
 
@@ -668,6 +668,93 @@ Added a 2-3 sentence rule summary to all 8 command files. Each summary explains 
 
 **Assumptions / limits:** F1 is a prompted heuristic (no token API exists). Runtime behavior (command loads, footer renders, Cowork `/compact`) is verified at T9's staging-branch install — not previewable in this environment (Markdown plugin). `marketplace.json` version lives at the repo root (not in the local plugin folder), so it is bumped at push time in T9.
 
+## v2.2.0 Backlog — Usage-Aware Status Reporting
+
+> Single ticket: **T1**. Query API hourly usage and display in `/5bot-status` output. Canonical edits in `plugins/5bot/`; sync guidance into `_framework/5bot/`. See `architecture.md` → "v2.2.0".
+
+### T1: Add API usage line to /5bot-status — v2.2.0
+
+**Goal:** Display current hourly API usage percentage + reset time in the `/5bot-status` output, so users can decide whether to continue or pause before the next bot command.
+
+**Acceptance Criteria:**
+- [ ] `commands/5bot-status.md` modified: query API hourly usage percentage + reset time (UTC).
+- [ ] New **Usage** line added to output, placed after "Active ticket" and before "Last decision".
+- [ ] Format: `Usage: API hourly usage: {percent}% (resets at HH:MM UTC)` — neutral tone, no emoji, no urgency.
+- [ ] Query mechanism: attempt to retrieve usage from Claude context (prompt-based query: "Based on your context, what is the current API hourly usage percentage? Respond with an integer 0–100 or 'unavailable'.").
+- [ ] Reset time computed as: `(current_hour + 1) % 24` in UTC, or ask Claude for it directly.
+- [ ] **Silent fallback:** if usage data unavailable (API down, no context, surface doesn't support it), **silently omit the Usage line** — no error, no placeholder, command succeeds either way.
+- [ ] Placement: exactly one line after "Active ticket" (grouping it with decision context).
+- [ ] No changes to other `/5bot-status` sections; no new state files; no writes.
+- [ ] Verified: `/5bot-status` output includes Usage line when data available; omits it gracefully when unavailable.
+
+**Files involved:**
+- `C:\AI Bins\Code\plugins\5bot\commands\5bot-status.md` — modified to query + display usage
+- `C:\AI Bins\Code\plugins\5bot\skills\five-bot\SKILL.md` — optional note on usage query mechanism (reference, not duplication)
+
+**Out of scope:**
+- No pause/resume logic (soft preference only — informational, non-blocking)
+- No credential management (use Claude context only, never API keys in project)
+- No rate-limit queuing or automation
+- No changes to other commands or state files
+
+---
+
+## v2.2.0 Developer Notes
+
+> **STATUS (2026-06-29): T1 REVERTED at the QA gate (verdict REVISE).** The API-usage approach was rejected (the model can't read usage %); the Usage line was removed from `commands/5bot-status.md`. The feature pivots to a knowable signal (recommended: git-awareness) — re-scope via `/product`. See `decisions.md`. Notes below retained for history.
+
+### T1: Add API usage line to /5bot-status — implemented (2026-06-29)
+
+**Summary of changes:** Added an optional, read-only **Usage** line to `commands/5bot-status.md`, placed after "Active ticket" and before "Last decision" per the architecture. Format: `Usage: API hourly usage: {percent}% (resets at HH:MM UTC)`, neutral tone, no emoji. Reset time computed in UTC as the top of the next hour `(current_hour + 1) % 24` → `HH:00 UTC`. Updated the line-count note to "~10 (~12 with Usage)". The command still writes nothing (read-only preserved).
+
+**Files modified:**
+- `plugins/5bot/commands/5bot-status.md` — added the Usage bullet + line-count note.
+
+**Dev decision — no-fabrication guard (important):** The ticket/architecture propose asking Claude for its own usage % ("Claude already knows its own usage"). In practice the model does **not** have a reliable signal for the user's API hourly usage %, so the implementation emits the line **only** when a *real* signal is present in context (system hint / env var / MCP source) and otherwise **silently omits** it — and it explicitly forbids guessing/fabricating a number (anti-drift rule 6). Keeps the common case safe (no made-up percentages) and matches the approved "silent fallback." This is a faithful implementation of the AC, not an architecture change.
+
+**Known limits / honest feasibility note:** On most surfaces today there is likely **no** usage signal in context, so the line will usually be omitted (the designed graceful fallback). The feature shows real data only if/where the host surface injects usage info. Maps directly to the recorded post-Dev QA question "Does the usage query work reliably across Code/Cowork/web?" — QA should verify per surface and expect omission to be the norm unless a signal exists. **Open risk for the gate:** the feature may rarely/never display in practice.
+
+**SKILL.md note:** Architecture marked a SKILL.md reference note *optional*. Skipped intentionally — `/5bot-status` is the only consumer, so centralizing adds indirection with no DRY benefit; logic is self-contained in the command. Trivial to add if QA prefers.
+
+**_framework sync:** Not applicable for T1 — it touches only the plugin command; `_framework/5bot/` holds rules/personas/templates, none of which changed.
+
+**How to test (runtime — QA staging):** run `/5bot-status` in (a) a surface where usage info is present (expect the Usage line, correct position + format) and (b) a surface with none (expect the line silently omitted, no error, rest of snapshot intact). Confirm no fabricated number ever appears. Not exercisable in this Markdown-only authoring environment.
+
+---
+
+## v2.2.0 QA Review
+
+### T1: Add API usage line to /5bot-status — QA (2026-06-29)
+
+**Verdict: ✅ APPROVED WITH NOTES** (static review; runtime cross-surface test pending at staging)
+
+| Acceptance criterion | Status | Notes |
+|---|---|---|
+| Command queries usage % + UTC reset | ✅ | Usage bullet added with query + UTC reset computation |
+| Usage line after Active ticket, before Last decision | ✅ | Correct placement |
+| Format `Usage: API hourly usage: {percent}% (resets at HH:MM UTC)`, neutral | ✅ | Exact format; no emoji/urgency |
+| Prompt-based query from context | ✅ | Hardened to real-signal-only (system hint / env / MCP) |
+| Reset = `(current_hour+1)%24` UTC | ✅ | `HH:00 UTC` |
+| Silent fallback, no error/placeholder | ✅ | Omits line; no `unavailable` text; command still succeeds |
+| No other sections changed; no writes; no new state | ✅ | Read-only preserved |
+| Verified output includes/omits Usage line | ⚠️ NOT RUNTIME-TESTED | Markdown plugin; verify at staging across Code/Cowork/web |
+
+**Findings:**
+- ✅ Implementation faithfully meets every acceptance criterion; clean, minimal, read-only.
+- ✅ **No-fabrication guard is the right call.** Without it, the "ask Claude for usage %" prompt risks a hallucinated number — a real trust/correctness bug. The guard converts the unreliable case into a safe silent omission. QA endorses keeping it.
+- 🔴 **Feasibility risk (escalate to human gate — NOT a Dev fix):** the model has no reliable access to the user's API hourly usage %; on standard surfaces no such signal is in context. Net effect: **the Usage line will almost always be omitted** — the feature likely shows nothing in practice. This is inherent to the feature's premise (the Architect rationale "Claude already knows its own usage" is factually incorrect), not an implementation defect, so there is no code change for Dev to make.
+- 🟡 **Record correction:** the Architect decision's claim that Claude knows its own usage via "internal rate-limit enforcement" should be marked inaccurate so future readers don't rely on it.
+- 🟢 Security/safety: no credentials, no writes, no new deps — none.
+
+**Recommendation to the gate** — the work is correct and safe to ship as-is (a harmless, forward-compatible no-op that activates only if a real signal ever appears). Because it likely never displays today, the human should choose:
+- **(a) Ship as-is** — accept as forward-compatible; no harm.
+- **(b) Revise** — pivot to a signal the model/harness CAN see (context-window / `/compact` pressure, or the read-only git-awareness idea already in Open Follow-ups), to actually deliver the "can I continue?" value.
+- **(c) Reject/shelve** until a usage signal is genuinely exposed to commands.
+
+**Test plan (staging):** install from staging; run `/5bot-status` on (a) a surface with usage info present → Usage line correct; (b) without → omitted, no error, snapshot intact; confirm no fabricated % ever; confirm placement + format.
+
+---
+
 ## Review Notes
 
 ### T1: Add ⚠️ Warning to Handoff.md Template — QA Review
@@ -784,5 +871,32 @@ Reviewed against the ticket acceptance criteria and `ux.md`. Static review (Mark
 **T6:** No bugs found. APPROVED (runtime check deferred to T9 staging).
 **T7:** No bugs found. APPROVED (runtime check deferred to T9 staging).
 **T8:** No bugs found. APPROVED (runtime check deferred to T9 staging).
+
+## v2.2.0 (re-scoped) — T2: git-awareness line (build record)
+
+### T2 — Ticket
+**Goal:** Add a read-only git-awareness line to `/5bot-status` (branch · sync vs upstream · clean/dirty), per `ux.md` E1 (re-scoped) and the `architecture.md` git spec.
+
+**Acceptance Criteria:**
+- [ ] `commands/5bot-status.md`: append a git line to the freshness footer when in a git repo; **silent no-op** otherwise (not a repo / git absent / any git error).
+- [ ] Uses only read-only, **no-network** commands (`rev-parse`, `symbolic-ref`, `rev-list --left-right --count @{u}...HEAD`, `status --porcelain`); never fetch/pull/push/commit/mutate.
+- [ ] Render `git: <branch> · <sync> · <clean|uncommitted changes>`; terse all-good `git: <branch> · in sync · clean`; `(last fetch)` on behind/ahead; `no upstream` / `detached HEAD` handled.
+- [ ] Informational only — does not change the recommended next command; read-only (writes nothing).
+- [ ] No other `/5bot-status` sections changed.
+
+**Files:** `commands/5bot-status.md`. **Out of scope:** fetch/pull/push/mutation/network; credentials; GitHub/Jira/Slack integration; git state on other commands; `/5bot-init` nudge (deferred).
+
+### T2 — Developer Notes (2026-06-29)
+Implemented in `commands/5bot-status.md`: extended the freshness-footer instruction to append the git line when in a repo, and added a "Git line" spec block (the four read-only commands + render + edge handling). No-network / no-mutation and omit-on-error are stated explicitly. No `_framework` sync needed (touches only the plugin command). Cross-platform: the git commands are identical on Windows/unix; only shell invocation differs (handled by the agent).
+**Runtime test (staging):** `/5bot-status` in (a) clean+synced repo → `… · in sync · clean`; (b) behind/dirty → `N behind origin (last fetch) · uncommitted changes`; (c) no upstream → `no upstream`; (d) detached HEAD; (e) non-repo → line omitted, no error. Confirm no fetch/network and nothing written.
+
+### T2 — QA Review (2026-06-29)
+**Verdict: ✅ APPROVED WITH NOTES** (static; runtime cross-surface test pending at staging).
+- ✅ Meets all AC; read-only, no-network, omit-on-error, informational-only — matches `ux.md` / `architecture.md`. Unlike the reverted API-usage T1, **this signal is genuinely knowable** (git is local), so the line will actually display.
+- ✅ Honest staleness: `(last fetch)` label on behind/ahead (no fetch performed).
+- 🟡 Note: ahead/behind reflects the last fetch — if the user hasn't fetched recently it may lag reality. Acceptable + labeled; flagged for the gate.
+- 🟢 Security/privacy: local-only facts; no credentials, no network, no writes.
+- ⚠️ Runtime not exercisable here (Markdown plugin) — verify per the staging test plan.
+**Recommendation:** APPROVE for release as v2.2.0 (pending the staging smoke test).
 
 ## Release Checklist

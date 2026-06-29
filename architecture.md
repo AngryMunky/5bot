@@ -390,3 +390,130 @@ All tickets are Markdown edits. No dependencies. Can be developed in parallel.
 **Open questions:**
 - Should stage lock be prioritized for v1.3.0, or defer further?
 - Are there other clarity improvements beyond these three?
+
+---
+
+# Architecture (v2.2.0 re-scoped — git sync-awareness)
+
+> Build spec for the read-only **git-awareness line** in `/5bot-status` (re-scope approved 2026-06-29; Architect gate skipped under the 2-gate default). Markdown-only — the "code" is git-command instructions in `commands/5bot-status.md`. Supersedes the API-usage architecture below.
+>
+> **Tech:** no new deps, no network, no credentials, no mutation. The command runs read-only git commands via the host shell (git is cross-platform — same commands on Windows/unix; only invocation differs, handled by the agent's shell):
+> - repo check `git rev-parse --is-inside-work-tree`; branch `git symbolic-ref --quiet --short HEAD` (else `detached HEAD`); sync `git rev-list --left-right --count @{u}...HEAD` (no `@{u}` → `no upstream`; label counts `(last fetch)` — no fetch performed); cleanliness `git status --porcelain`.
+> - **Omit the line silently on any error / non-repo / git absent.** Informational only; never alters the next-command recommendation; writes nothing.
+> - Placement: last line of the freshness footer (per `ux.md` E1 re-scoped). **Ticket: T2** (see `dev-qa.md`).
+> - Stays within "no external integrations" — never networks or uses credentials; local tooling only (Product OQ-1 ruling).
+
+---
+
+# Architecture (v2.2.0 · Usage-Aware Status Reporting) — SUPERSEDED (2026-06-29)
+
+> ⛔ SUPERSEDED: the API-usage approach was reverted at the QA gate (model can't read usage %). See the git sync-awareness spec above. Retained for history.
+
+> Canonical architecture artifact the Dev Bot reads. Plans the technical implementation of the read-only API usage status line in `/5bot-status`, approved at UX gate (2026-06-26). Resolves three blocking OQs: API feasibility, reset-time format, output placement.
+
+## Tech Stack (v2.2.0)
+
+**No new dependencies.** v2.2.0 uses the existing Claude Code plugin architecture:
+- **Language:** Markdown (command definitions)
+- **State storage:** Plain Markdown files (project-state.md, etc.)
+- **API query source:** Claude's own context (via system prompt inspection, MCP context, or environment variable)
+- **No external APIs or databases**
+
+**Key implementation detail:** The `/5bot-status` command (Markdown-based prompt) must query for API usage data without blocking or erroring. This is accomplished by:
+1. Attempting to retrieve usage data from available sources (Claude context, environment, MCP)
+2. Silently omitting the usage line if retrieval fails or is unavailable
+3. Never blocking the command; never showing error states
+
+## System Architecture (v2.2.0)
+
+**Change scope:** Minimal. Modify one existing command (`/5bot-status`) to add one optional data line.
+
+**Command flow:**
+```
+User runs `/5bot-status`
+  ↓
+Command reads: project-state.md, decisions.md, handoff.md (unchanged)
+  ↓
+NEW: Attempt to query API hourly usage % + reset time
+  ↓
+Render output:
+  - Stage, Active ticket (unchanged)
+  - [NEW] Usage line (if data available)
+  - Last decision, Open questions (unchanged)
+  - Next command footer (unchanged)
+  ↓
+If usage query unavailable: silently omit the line (no error)
+```
+
+**No state changes.** The usage data is read-only, computed on-the-fly, and never persisted to `project-state.md` or other files.
+
+## Decisions (v2.2.0) — Resolving the Three OQs
+
+**OQ-1: API Feasibility (Can Claude Code expose usage data?)**
+
+**RESOLVED: YES, via Claude context.** The `/5bot-status` command runs within Claude Code's inference context. The model can inspect its own context to determine remaining budget / usage via:
+- System prompt hints (if Claude Code embeds usage info)
+- Environment variables (if Claude Code sets them)
+- Direct MCP query to a usage endpoint (if one exists)
+- Fallback: graceful omission if none available
+
+**Implementation approach:**
+- The command attempts to query usage via the available mechanism (recommended: ask Claude itself via a prompt clause like *"Based on your context, what is the current API hourly usage percentage? Respond with a single percentage integer (0–100) or 'unavailable'."*)
+- If the query returns a percentage, format and display: `Usage: API hourly usage: {percent}% (resets at {reset_time} UTC)`
+- If the query returns "unavailable" or times out, silently omit the line
+
+**Why this works:**
+- Claude already knows its own usage (it's part of internal rate-limit enforcement)
+- No external API credentials needed (no security risk)
+- Graceful degradation if the mechanism changes or isn't available in a specific environment
+- Matches the "portable across surfaces" principle (works in Code, Cowork, web as long as Claude has context)
+
+**OQ-2: Reset Time Format**
+
+**RESOLVED: UTC time (HH:MM UTC).** Example: "resets at 15:00 UTC"
+
+**Rationale:**
+- UTC is unambiguous and durable (doesn't change if user copies/pastes output hours later)
+- Human-relative time ("in 15 minutes") is friendlier but breaks in copied output and requires timezone awareness
+- Claude's hourly rolling window resets at "current hour + 60 min", so the UTC time is deterministic (ask Claude: *"In UTC, at what time does the hourly window reset?" — e.g., if it's 14:30 UTC now, reset is at 15:30 UTC*)
+
+**Implementation:** Compute `reset_time = (now_hour + 1) % 24` in UTC, formatted as "HH:00 UTC" or ask Claude to provide it.
+
+**OQ-3: Placement in `/5bot-status` Output**
+
+**RESOLVED: After "Active ticket", before "Last decision".** This groups the usage line with decision-making context.
+
+**Rationale:**
+- User sees: Stage → Active Ticket → **Usage** → Last Decision → Open Questions → Next Command
+- This flows as: "Where am I?" → "What am I working on?" → "Can I continue?" → "What did we last decide?" → "What's next?"
+- Placing usage mid-output (not at the end) ensures users see it before deciding whether to run the next command
+- Keeps `/5bot-status` output readable (~12 lines with usage, still brief enough for "fast re-orient")
+
+## Implementation Plan (v2.2.0)
+
+**One ticket: T1 — Add usage line to `/5bot-status`**
+
+- **Goal:** Query API usage and display in `/5bot-status` output
+- **Dev work:** ~20–30 min (modify command prompt + output formatting; add query logic)
+- **QA work:** Test with usage data available and unavailable; verify silent fallback; check readability
+
+**No architectural changes needed.** The plugin's modular Markdown-based design makes this a straightforward addition.
+
+## Assumptions (v2.2.0)
+
+- **ASSUMPTION:** Claude Code's inference context includes or can be queried for API usage percentage (not verified, but highly likely given rate-limit enforcement)
+- **ASSUMPTION:** Reset time can be computed from current time + 60 minutes (rolling hourly window, not calendar hour)
+- **ASSUMPTION:** Query is fast enough (< 500ms) so `/5bot-status` doesn't hang; if query is slow, it times out and the line is silently omitted
+- **ASSUMPTION:** Users understand "76% of hourly quota" without further explanation; no additional guidance text needed
+
+## Open Questions (v2.2.0)
+
+**None blocking for Dev.** The three OQs are all resolved:
+- OQ-1: Query via Claude context ✓
+- OQ-2: UTC format ✓
+- OQ-3: After Active ticket ✓
+
+**Post-Dev questions (for QA/gate):**
+- Does the usage query work reliably across Code/Cowork/web?
+- Does the query timeout gracefully?
+- Is the "resets at HH:MM UTC" time accurate?

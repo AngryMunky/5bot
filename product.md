@@ -190,6 +190,162 @@ These compound: the moment a user most needs to compact (long session) is exactl
 
 ---
 
+# PROPOSED v2.2.0 — Usage-Aware Workflows (API quota monitoring)
+
+> ⛔ **SUPERSEDED (2026-06-29).** The lightweight version of this (a read-only usage line) was built as T1, then **reverted at the QA gate (REVISE)** — the model can't reliably read the user's API usage %, so the line would almost always silently omit. v2.2.0 was re-scoped to **git-based sync-awareness** (a signal the command CAN read). See "PROPOSED v2.2.0 (re-scoped)" below. This section is retained for history. (`decisions.md`, 2026-06-29.)
+
+Human request: "Have the 5bot routines check the usage to see what is available and make an estimation as to when the routine should stop and pick back up again? Perhaps when hourly usage is above 75%?"
+
+## Problem
+
+During long development sessions, users can exceed API usage quotas (hourly, daily, or organizational limits) without realizing it until they hit a rate-limit error mid-workflow. The result is workflow interruption, manual quota checks, or surprise cost overages. Users want to know *before* execution whether it's safe to proceed, and *when* it will be safe to resume.
+
+## Target Users
+
+Existing 5bot users concerned with:
+- **Cost management:** preventing surprise API overspend during intensive dev sessions.
+- **Quota avoidance:** working within organizational or personal hourly/daily usage caps.
+- **Long-running projects:** multi-day workflows where quota reset timing matters.
+
+## User Goals
+
+1. Know current API usage without leaving the workflow or checking the dashboard.
+2. Get a clear signal to pause before hitting a hard rate limit.
+3. Know when to resume (quota reset time).
+4. Never lose work state; pause is reversible.
+
+## MVP Scope (if approved)
+
+**Advisory usage check** at the start of each bot command (Product, UX, Architect, Dev, QA):
+- Read the user's current hourly API usage (from Anthropic API or host environment).
+- If usage ≥ threshold (default 75%), log a soft nudge: *"API hourly usage at 76%; recommend pausing until quota resets at 15:00 UTC. Continue anyway?"*
+- **No blocking:** Default to continue — this is awareness, not enforcement.
+- **No automation:** Human decides when to run the next command; no auto-queue or background resumption.
+- **Configuration:** User sets threshold in `project-state.md` or `.env` (no built-in default).
+
+## Out of Scope (This Round)
+
+- Automated pause/resume scheduling.
+- Rate-limit queuing or background retry.
+- Cost prediction or analytics dashboards.
+- Rate-limit vs. quota distinction; multi-user org quotas.
+- Hard quota enforcement (blocks workflow).
+
+## Key Open Questions (Blocking)
+
+**OQ-1 (Scope / External Integration):** Does querying the Anthropic API for usage data count as out-of-scope "External integrations (GitHub, Jira, Slack)", or is it acceptable as first-party Anthropic carve-out (like Claude Design)?
+
+**OQ-2 (Quota definition):** Is the 75% threshold:
+- Personal hourly quota (usage this calendar hour)?
+- API key rate-limit (tokens/min on a specific key)?
+- Organization / team quota?
+- Monthly cost ceiling?
+
+**OQ-3 (Pause semantics):** Soft nudge (advisory) or hard block (refuse to proceed)?
+
+**OQ-4 (Credentials):** How does 5bot query usage? Requires:
+- User provides Anthropic API key (environment variable)?
+- Host (Claude Code / Cowork) exposes usage data?
+- Or dashboard-only (not automatable)?
+
+**OQ-5 (Resume trigger):** Manual (user re-runs the command), time-based (auto-resume at quota reset), or polling?
+
+## Risks
+
+1. **Scope creep into billing/analytics.** Quota nudges naturally lead to dashboards and cost predictions. Recommend strict advisory-only scope.
+2. **API credentials exposure.** Storing API keys in project files risks leaks. Must use environment variables / host integration.
+3. **Quota reset timing confusion.** Claude API uses rolling hourly windows, not calendar hours. Users may pause at wrong time.
+4. **Offline or API outages block workflow.** Operational coupling to external service.
+5. **False alarms mid-work.** Batch `/dev` or `/qa` runs may spike usage mid-execution, pausing mid-work. Recovery is awkward.
+
+## Assumptions
+
+- **ASSUMPTION:** User has visibility into Claude API usage (dashboard or API endpoint).
+- **ASSUMPTION:** 75% refers to personal hourly quota.
+- **ASSUMPTION:** Soft nudge is preferred over hard blocks.
+- **ASSUMPTION:** Resume is manual (user re-runs command), not automated.
+
+## Recommendation
+
+**Status: PROPOSED.** Viable if the gate resolves three questions:
+1. In-scope (first-party carve-out) or out-of-scope (external integration)?
+2. Soft nudge or hard block?
+3. Version slot (v2.2.0, v3.0.0, or backlog)?
+
+If approved at the gate, route: `/product` → `/architect` → tickets → `/dev` → `/qa` → gate → release.
+
+If rejected/deferred, record in `decisions.md` and mark as OUT OF SCOPE or DEFERRED.
+
+---
+
+# PROPOSED v2.2.0 (re-scoped 2026-06-29) — Sync-Awareness via read-only git status
+
+> Supersedes the API-quota approach above (and its as-built usage line, reverted at the QA gate — `decisions.md`). The model can't reliably read API usage %, so v2.2.0 pivots to a signal the command CAN read: local **git** state. Human chose git-awareness over context-window pressure at the 2026-06-29 signal decision.
+
+## Problem
+
+Working across machines, sessions, and surfaces (local Claude Code ↔ Cowork ↔ web), a user can resume on a **stale local copy** and unknowingly build on out-of-date state — or carry **uncommitted changes** they forget to save. 5bot surfaces nothing about this. (Demonstrated live: this very session built on a stale snapshot until disk reads exposed the divergence — exactly this failure mode.) Users want a glance-level "am I in sync?" signal before they act.
+
+## Target Users
+
+Existing 5bot users, especially those who work the same project across multiple machines/surfaces (local + Cowork), where local copies drift; and anyone who wants a heads-up that they have uncommitted work before compacting or switching context.
+
+## User Goals
+
+1. See at a glance whether the local copy is behind/ahead of its remote and whether there are uncommitted changes — without leaving the workflow.
+2. Catch divergence **before** building on stale state.
+3. Zero disruption: read-only, informational; never touches the repo.
+
+## Scope ruling — is this an "external integration"? (the key gate question)
+
+**Product ruling (confirm at gate): NO — this is local tooling, not an external integration.** The out-of-scope item "External integrations (GitHub, Jira, Slack)" means networked third-party *services* (creating GitHub issues, Jira sync, Slack posts) with remote APIs and credentials. Reading local `git` state is reading the user's own working copy via a tool already on their machine — the same category as reading the on-disk Markdown files 5bot already reads. **To keep it unambiguously local:** the feature does **NOT** run `git fetch` (no network, no credentials, no remote API). Ahead/behind is computed from already-fetched refs (`@{u}...HEAD`) and labeled "as of last fetch"; dirty state from `git status`. No mutation, ever. So it sits clearly inside *acceptable local tooling*, not the prohibited integrations. (Contrast: the rejected API-usage path needed a remote/credentialed signal — git-awareness deliberately avoids that.)
+
+## MVP Scope (if approved)
+
+A **read-only git line** in `/5bot-status` (only there — not on every command), best-effort:
+- Branch + ahead/behind vs upstream (from last fetch, labeled) + a dirty flag. e.g. `git: main · 2 behind origin (as of last fetch) · uncommitted changes`.
+- **Silent no-op** when: not a git repo, no upstream, or git unavailable — print nothing (portability; 5bot doesn't require git).
+- **Never mutates, never networks:** no fetch/pull/push/commit; reads local refs + status only.
+- Exact wording/format and placement in the `/5bot-status` snapshot → UX.
+
+## Out of Scope (this round)
+
+- `git fetch`/pull/push/commit or ANY repo mutation or network call.
+- Credentials, remote API calls, GitHub/Jira/Slack service integration (still out).
+- Git state on commands other than `/5bot-status` (keep it to the re-orientation snapshot).
+- Auto-resolving divergence, multi-repo/submodules, conflict handling.
+- A one-time `/5bot-init` git nudge — optional, deferred (UX/Architect may note where it'd hook).
+
+## Success Criteria
+
+- A returning/cross-machine user can tell from `/5bot-status` whether they're behind or dirty, catching stale-copy divergence before acting.
+- Zero disruption for non-git projects (silent no-op); zero repo mutation; no network/credentials.
+
+## Risks
+
+1. **Scope creep toward real git integration** (fetch/pull/push). *Mitigation:* hard rule — read-only, no network, no mutation; stated in the ticket.
+2. **Stale "behind" info** (no recent fetch). *Mitigation:* label "as of last fetch"; omit ahead/behind if no upstream; never auto-fetch.
+3. **Portability** (no git / not a repo / sandbox without git). *Mitigation:* silent no-op.
+4. **Cross-platform git invocation** (PowerShell vs unix). *Mitigation:* Architect specifies — same pattern as the v2.1.0 zip extract.
+
+## Assumptions
+
+- `/5bot-status` runs in a git checkout often enough for this to help; when not, it silently no-ops.
+- Reading local git refs/status is available via the host shell the agent already uses.
+
+## Open Questions
+
+- **OQ-1 (gate, blocking): confirm the scope ruling** — read-only local git-awareness is acceptable local tooling, NOT an out-of-scope "external integration." (Product recommends YES, in-scope.)
+- **OQ-2 (→ UX):** exact line content + placement in the `/5bot-status` snapshot.
+- **OQ-3 (→ Architect):** cross-platform invocation + the precise no-network commands (`git rev-list --left-right --count @{u}...HEAD`, `git status --porcelain`), and behavior when detached / no upstream.
+- **OQ-4 (minor):** include a one-time `/5bot-init` nudge? (Proposed: defer.)
+
+## Recommendation
+
+**Status: PROPOSED (re-scoped).** Recommend APPROVE as v2.2.0: feasible, read-only, solves a demonstrated pain, and stays within the no-integrations boundary by avoiding network/credentials. Route: Product gate → `/ux` → `/architect` (gate optional under the 2-gate default) → `/dev` → `/qa` → gate → release v2.2.0.
+
+---
+
 # Proposed v2.1.0 — Claude Design Integration (optional)
 
 Human request: an **option** to bring design elements created in Claude Design (claude.ai/design) into the 5bot workflow, available for *future* projects (explicitly not this exchange's specific design). Trigger: the human pasted a Claude Design "Send to local coding agent" prompt; the terminal reported the `claude_design` MCP connector wasn't connected and couldn't access the shared design link.

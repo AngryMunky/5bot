@@ -1,4 +1,4 @@
-# The 5bot Framework (v2.1.0)
+# The 5bot Framework (v2.2.0)
 
 A disciplined way to take a software idea from rough concept to tested implementation using a small team of single-purpose AI roles, with a human as the final decision-maker. The whole system runs on plain Markdown files, so it is portable across tools and easy to read, edit, and version-control.
 
@@ -313,6 +313,9 @@ This framework is shaped for software development, but the skeleton — **Define
 ---
 
 ## Recent improvements
+
+**v2.2.0 — Git sync-awareness in `/5bot-status` (optional)**
+- **Know if your local copy is current:** `/5bot-status` shows a read-only git line — branch · ahead/behind vs upstream (as of last fetch) · clean/uncommitted — so you catch a stale checkout or unsaved work before acting. Read-only; never fetches or mutates; silent when not a git repo.
 
 **v2.1.0 — Claude Design reference (optional)**
 - **Link a Claude Design export:** `/ux` can capture a Claude Design `.zip` into a `## Design Reference (Claude Design)` block, and the Developer Bot then builds against the extracted `<Name>.dc.html` — ticket-scoped, never auto-generating the whole design. Stored under `design/<slug>/` (pristine zip kept alongside). `ux.md` stays canon; native Claude Design only (Figma stays out). Entirely optional — zero friction when unused.
