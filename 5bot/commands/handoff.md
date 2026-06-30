@@ -8,8 +8,9 @@ Update the 5bot bookkeeping for the stage just completed (see the `five-bot` ski
 1. Overwrite `handoff.md`: Stage Completed, Bot, What Changed, Artifacts Created/Updated, Open Questions/Risks, Human Approval Required?, Next Bot + Instructions. Keep it transient - do not copy full state into it.
 2. Update `project-state.md`: Current Stage, Current Active Ticket, Major Decisions, Open Questions, Known Risks, Last Updated / By.
 3. If a decision was settled this stage, append a block to `decisions.md` (newest on top).
-4. **If the session is long** (see the F1 context-health reminder + heuristic in the `five-bot` skill), print the terse reminder once, just ABOVE the footer. Skip it on a short session.
-5. End with the **F3 next-command footer** (see the `five-bot` skill). After `/handoff` the next command is always `/gate`:
+4. **Lean Context archive rollover** (see the `five-bot` skill → "Lean Context"): relocate stale content to `archive.md` per the rollover rules — superseded version sections, decisions beyond the newest 8, DONE + shipped tickets — ensure each trimmed file's `→ archive.md` pointer line, and **only if something moved** print one line just ABOVE the footer: `🗂 Archived → archive.md: <what moved>. Working files trimmed; nothing lost (relocated, in git).` Relocate only — never delete or summarize.
+5. **If the session is long** (see the F1 context-health reminder + heuristic in the `five-bot` skill), print the terse reminder once, just ABOVE the footer. Skip it on a short session.
+6. End with the **F3 next-command footer** (see the `five-bot` skill). After `/handoff` the next command is always `/gate`:
 
    ---
    **▶ NEXT:** `/gate` — request human approval for the stage just recorded.

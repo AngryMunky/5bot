@@ -346,6 +346,62 @@ A **read-only git line** in `/5bot-status` (only there — not on every command)
 
 ---
 
+# PROPOSED v2.3.0 — Lean Context (lazy loading + archive rollover)
+
+> Human-requested (2026-06-29) consolidation of 5bot's own context usage. Combines two levers: **#3 lazy/section loading** (load only the live slice) + **#1 archive rollover** (relocate history off the read path). Idea **#2** (per-file budgets + summarize) was **rejected** — lossy + high upkeep. Kept deliberately short (dogfooding the goal).
+
+## Problem
+As a project runs, the shared Markdown accumulates history — every version's product/ux/architecture sections, all decisions, all shipped tickets + dev notes + QA reviews — and bots reload the whole mass each turn though only the current slice matters. **Exhibit A: this very project** (`product.md`/`dev-qa.md`/`decisions.md` carry v1.3.0→v2.2.0). Effect: rising token cost, noisier context, faster context exhaustion (already a top known risk).
+
+## Target Users
+All 5bot users; especially long-running / multi-version projects and teams carrying a project across many sessions (where history compounds).
+
+## Goals
+1. Bots load only what the current stage/ticket needs.
+2. History preserved + auditable, but off the default read path.
+3. Near-zero added user interaction; **nothing destroyed** (relocate, don't summarize).
+4. Context cost stays ~flat as a project ages (pre-emptive).
+
+## MVP Scope (combined #3 + #1)
+- **Lazy loading (#3):** bots read only the live slice — the current version section of product/ux/architecture, the active ticket in dev-qa, the newest few decisions — via file conventions (current vs archived) + read-by-section discipline in personas/commands.
+- **Archive rollover (#1):** on `/handoff`, stale content auto-relocates to append-only archives never loaded unless explicitly asked — superseded version sections → `history.md` (or per-stage `*-archive.md`), decisions beyond the last N → `decisions-archive.md`, shipped tickets → `dev-qa-archive.md`. Working files keep only live content.
+- **Non-destructive + discoverable:** archives are relocations, never deletes/summaries; each working file carries a one-line pointer to its archive; `/5bot-status` notes when archives exist.
+
+## Out of Scope (this round)
+- Lossy summarization / hard per-file trim budgets (idea #2) — revisit later.
+- Automatic token measurement / live usage display (the reverted v2.2.0 API path — model can't read usage).
+- Changing the canonical file set beyond adding archives (`project-state.md` stays the canon).
+- Auto-migrating *existing* bloated projects (offer a one-time pass / manual guidance; full auto-migration later).
+
+## Priority & Versioning
+Additive framework improvement → **MINOR, v2.3.0**. Touches personas/commands/rules + templates, and must sync the two copies (plugin + `_framework`). No breaking change (archives are additive; legacy projects fall back to "unlocked + warn").
+
+## Success Criteria
+- On a multi-version project, a typical bot turn loads materially less; working files stay ~flat in size regardless of project age.
+- No history lost — everything relocated stays retrievable.
+- Rollover is automatic on `/handoff`; users don't hand-manage archives.
+- `project-state.md` remains the single canon.
+
+## Risks
+1. **Mis-archiving live content.** Mitigate: conservative rules (keep current version section + last-N decisions + active tickets); archives are one read away.
+2. **Two-copies + `_framework` sync** (templates/personas change). Mitigate: release ticket carries the sync criterion (as v2.1.0/v2.2.0 did).
+3. **Existing-project migration** (files already bloated). Mitigate: one-time archive pass + legacy "unlocked + warn".
+4. **Discoverability** (where did history go?). Mitigate: pointer line per file + `/5bot-status` archive note.
+
+## Open Questions — resolved at Product gate (2026-06-29) except where noted
+- ✓ **OQ-1:** APPROVED — Lean Context = #3 lazy-load + #1 archive rollover; **#2 excluded**.
+- ✓ **#3 lazy loading:** approved.
+- ✓ **OQ-2 (Product rec):** a **single `archive.md`**, off the read path, sectioned (Stage history / Decisions / Dev-QA). (Alt: per-kind archives.)
+- ✓ **OQ-4 (Product rec):** conservative thresholds — stage files keep the *current* version section only; `decisions.md` keeps the last ~8 blocks; `dev-qa.md` archives a ticket's record once it is DONE + its version shipped. Rollover at `/handoff` + release sweep.
+- ✓ **OQ-5 (Product rec):** include a one-time **`/5bot-archive`** command in MVP (retroactive, idempotent, non-destructive).
+- **OQ-3 (→ Architect):** lazy-read mechanism — file-splitting vs anchored/offset reads vs both.
+- *Recommendations carried to UX/Architect; human invited to tweak any.*
+
+## Recommendation
+**PROPOSED.** Recommend APPROVE as v2.3.0: directly cuts the top known risk (context exhaustion), is non-destructive, and is mostly automatic (hands-off). Route: Product gate → `/ux` → `/architect` → `/dev` → `/qa` → gate → release v2.3.0.
+
+---
+
 # Proposed v2.1.0 — Claude Design Integration (optional)
 
 Human request: an **option** to bring design elements created in Claude Design (claude.ai/design) into the 5bot workflow, available for *future* projects (explicitly not this exchange's specific design). Trigger: the human pasted a Claude Design "Send to local coding agent" prompt; the terminal reported the `claude_design` MCP connector wasn't connected and couldn't access the shared design link.

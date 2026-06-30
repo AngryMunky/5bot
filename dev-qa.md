@@ -899,4 +899,85 @@ Implemented in `commands/5bot-status.md`: extended the freshness-footer instruct
 - ⚠️ Runtime not exercisable here (Markdown plugin) — verify per the staging test plan.
 **Recommendation:** APPROVE for release as v2.2.0 (pending the staging smoke test).
 
+## v2.3.0 Backlog — Lean Context
+
+> Sequence **T1 → T2 → T3 → T4 → T5** (T1 foundational). Canonical edits in `plugins/5bot/`; sync to `_framework/5bot/` at T5. Rollover procedure + `archive.md` schema live once in `SKILL.md` (DRY). See `architecture.md` → "v2.3.0".
+
+### T1: Archive schema + rollover in SKILL.md & /handoff — v2.3.0
+**Goal:** Define `archive.md` + the rollover procedure once in the skill, triggered at `/handoff`.
+**Acceptance Criteria:**
+- [ ] `skills/five-bot/SKILL.md` gains a "Lean Context — archive rollover" section: `archive.md` schema (§ Stage history / § Decisions / § Dev-QA, append-only, header), the deterministic rules (stage files keep current version only; decisions keep newest 8; dev-qa archives DONE+shipped tickets), and the per-file pointer-line convention.
+- [ ] `commands/handoff.md`: after the state update, run the rollover sweep, ensure pointer lines, and print the one-line L3 note **only when something moved** — never silent ("nothing lost; relocated, in git").
+- [ ] Non-destructive (relocate only); `archive.md` created lazily on first rollover. Plain Markdown.
+**Files:** `skills/five-bot/SKILL.md`, `commands/handoff.md`. **Out of scope:** retroactive sweep (T3); lazy reads (T2).
+
+### T2: Anchored / section reads — v2.3.0
+**Goal:** Bots load only the live slice, not whole files.
+**Acceptance Criteria:**
+- [ ] `_framework/5bot/rules.md` "Token discipline" + personas: instruct bots to read by section/offset — `/dev` reads the active ticket block; stage bots read the current version section; `/5bot-status` reads the newest decision — not whole files.
+- [ ] No sub-file splitting (per OQ-3); rely on offset/grep + the pointer lines. Archived content opened only on explicit need.
+**Files:** `_framework/5bot/rules.md`, `_framework/5bot/personas/*.md`. **Out of scope:** rollover (T1).
+
+### T3: /5bot-archive command — v2.3.0  *(depends on T1)*
+**Goal:** One-time retroactive archive sweep for already-bloated projects.
+**Acceptance Criteria:**
+- [ ] New `commands/5bot-archive.md`: applies the SKILL.md rollover rules across all working files; reports counts moved.
+- [ ] Idempotent — "Nothing to archive — already lean." when nothing qualifies. Non-destructive (git-recoverable); no args (MVP).
+- [ ] Added to the command roster in `SKILL.md` + README.
+**Files:** NEW `commands/5bot-archive.md`, `skills/five-bot/SKILL.md`. **Out of scope:** `--dry-run` (deferred, OQ-7).
+
+### T4: /5bot-status archive note — v2.3.0
+**Goal:** Surface archive presence in one line.
+**Acceptance Criteria:**
+- [ ] `commands/5bot-status.md`: when `archive.md` exists, add one muted line — "Archive: archive.md (N entries) — history off the read path." Omit when none.
+- [ ] One line only; read-only; doesn't change the recommended next command.
+**Files:** `commands/5bot-status.md`. **Out of scope:** the git line (already shipped v2.2.0).
+
+### T5: Templates, _framework sync, docs & release — v2.3.0  *(depends on T1–T4 + QA)*
+**Goal:** Ship v2.3.0 with both copies in sync.
+**Acceptance Criteria:**
+- [ ] `_framework/5bot/templates/*`: add the one-line "→ archive.md" pointer placeholders where relevant; `/5bot-init` does NOT pre-create `archive.md` (lazy).
+- [ ] `_framework/5bot/` synced (rules + personas from T1/T2); README documents Lean Context (`archive.md`, `/5bot-archive`, the rollover note) + the new command in the roster.
+- [ ] Bump `plugin.json` + `marketplace.json` 2.2.0→2.3.0; root `CLAUDE.md` + MEMORY.
+- [ ] Dual-push to both repos, tag `v2.3.0` (per `PUBLISH.md`); **explicit push authorization required**.
+- [ ] (Optional, dogfood) run `/5bot-archive` on THIS project to slim its own stage files.
+**Files:** `_framework/5bot/*`, `README.md` (root + plugin), `.claude-plugin/*`, root `CLAUDE.md`, MEMORY. **Out of scope:** new feature work.
+
+## v2.3.0 Developer Notes — Lean Context (T1–T4, 2026-06-29)
+
+**T1 — archive schema + rollover.** Added "## Lean Context (v2.3.0)" to `SKILL.md` (`archive.md` schema § Stage history / Decisions / Dev-QA; deterministic rollover rules; pointer-line convention; triggers). `commands/handoff.md` gained step 4 — run the rollover sweep, ensure pointer lines, print the one-line "🗂 Archived → archive.md…" note **only when something moved** (F1 renumbered → 5, footer → 6). Relocate-only; archive created lazily.
+
+**T2 — anchored/section reads.** Placed the read-by-section rule in the two canonical spots: `SKILL.md` Lean Context section (bundled — reaches installed users) and `_framework/5bot/rules.md` "Token discipline" (local dogfooding). Covers all roles via the shared rule/skill — **did not** duplicate into each persona (redundant; `rules.md` is @imported alongside personas).
+
+**T3 — `/5bot-archive`.** New `commands/5bot-archive.md`: retroactive one-time sweep applying the same SKILL.md rules; idempotent ("Nothing to archive — already lean."); non-destructive; no args. Added to the roster (SKILL.md `description`); README roster → T5.
+
+**T4 — `/5bot-status` archive note.** `commands/5bot-status.md` footer now appends one muted line — "Archive: archive.md present — history off the read path." — when an archive exists; omitted otherwise.
+
+**Files:** `skills/five-bot/SKILL.md`, `commands/handoff.md`, `commands/5bot-status.md`, NEW `commands/5bot-archive.md`, `_framework/5bot/rules.md`.
+**Deferred to T5:** README docs, template pointer placeholders, version bump 2.2.0→2.3.0, dual-push + tag. **Not exercisable here** (Markdown plugin) — runtime verify at the T5 staging install.
+
+## v2.3.0 QA Review — Lean Context (T1–T4, 2026-06-29)
+
+**Verdict: ✅ APPROVED WITH NOTES** (static; runtime verify at T5 staging).
+
+| Acceptance criterion | Status |
+|---|---|
+| T1 — archive schema + rollover in SKILL.md & `/handoff` | ✅ schema + rules + triggers in SKILL.md; handoff step 4 + one-line note |
+| T1 — non-destructive, lazy archive | ✅ relocate-only stated; created on first rollover |
+| T2 — anchored / section reads | ✅ SKILL.md (bundled) + `rules.md` (local) |
+| T3 — `/5bot-archive` idempotent + roster | ✅ new command; "already lean" branch; in `description` roster |
+| T4 — `/5bot-status` archive note | ✅ one muted line; omitted when absent |
+
+**Findings:**
+- ✅ Matches AC; **DRY** (rollover logic lives once in SKILL.md, reused by `/handoff` + `/5bot-archive`); non-destructive throughout.
+- ✅ "Auto but never silent" preserved (the note prints only when something moved).
+- 🟡 Rollover relies on **consistent version-labeling** in stage-file section headers (e.g. `# Architecture (v2.3.0)`) to decide "older than current." The framework already labels sections by version, so acceptable — worth a README line (fold into T5). Bot-honored instruction, not enforced code (same as every 5bot mechanism).
+- 🟡 T2 lives in the shared rule/skill, not per-persona (correct, DRY) — confirm at staging that each role actually reads by section.
+- 🟢 No security/safety concerns (local file moves; git-recoverable).
+- ⚠️ Not runtime-exercisable here (Markdown plugin).
+
+**Test plan (T5 staging):** `/handoff` moves a superseded section + prints the note; `/5bot-archive` on this (bloated) project → counts + working files shrink + nothing lost; `/5bot-status` shows the archive note; spot-check that bots read only the active slice.
+
+**Recommendation:** APPROVE for release as v2.3.0 (T5) after the staging dogfood.
+
 ## Release Checklist

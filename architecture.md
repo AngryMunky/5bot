@@ -405,6 +405,34 @@ All tickets are Markdown edits. No dependencies. Can be developed in parallel.
 
 ---
 
+# Architecture (v2.3.0 — Lean Context)
+
+> Build spec for Lean Context (UX gate APPROVED 2026-06-29; Architect gate skipped). Markdown-only, no new deps. Resolves OQ-3 (lazy-read mechanism) + OQ-4 (rollover mechanics).
+
+## OQ-3 — lazy-read mechanism: anchored/section reads (NOT file-splitting)
+Keep the single working files; bots read only the live slice via offset/grep — `/dev` reads the active ticket block, stage bots read the current version section, `/5bot-status` reads the newest decision. The big win is archive rollover (removing history) + read-by-section, **not** sub-file proliferation (which adds upkeep). **Decision: anchored reads + archive split; no per-ticket/per-version sub-files.**
+
+## OQ-4 — rollover mechanics (runs inside `/handoff`, after the state update)
+Deterministic + conservative; "current version" read from `project-state.md`:
+- **Stage files** (product/ux/architecture): move any version section *older* than the current version → `archive.md` § Stage history. Keep current only.
+- **decisions.md:** keep the newest **8** blocks; older → `archive.md` § Decisions.
+- **dev-qa.md:** a ticket that is **DONE and whose version has shipped** → move its full record (card + dev notes + QA review) → `archive.md` § Dev-QA. Keep active/open tickets.
+- `archive.md` created on first rollover (append-only); ensure the one-line pointer in each trimmed file; `/handoff` prints the one-line L3 note listing what moved.
+
+## DRY
+The rollover procedure + `archive.md` schema live once in `skills/five-bot/SKILL.md`. Both `/handoff` (incremental, at a seam) and `/5bot-archive` (retroactive full sweep) call it — same rules, different trigger.
+
+## Sequence
+`T1 (archive schema + rollover in SKILL.md/handoff) → T2 (anchored/section reads) → T3 (/5bot-archive) → T4 (/5bot-status note) → T5 (templates + _framework sync + README + release)`. T1 is foundational (T3 reuses its logic).
+
+## Assumptions / Risks
+- Bots already offset/grep-read reliably (no new capability). Risk: mis-archiving live content → conservative rules + git-recoverable + archive one read away. Two-copies + `_framework` sync handled at T5.
+
+## Tickets
+See `dev-qa.md` → "v2.3.0 Backlog" (T1–T5).
+
+---
+
 # Architecture (v2.2.0 · Usage-Aware Status Reporting) — SUPERSEDED (2026-06-29)
 
 > ⛔ SUPERSEDED: the API-usage approach was reverted at the QA gate (model can't read usage %). See the git sync-awareness spec above. Retained for history.

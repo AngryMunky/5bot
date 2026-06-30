@@ -1,6 +1,6 @@
 ---
 name: five-bot
-description: Use when running a software project through the Five-Bot workflow (Product, UX, Architect, Developer, QA), or whenever the /product, /ux, /architect, /dev, /qa, /5bot-init, /handoff, or /gate commands are used. Defines each role's scope, the shared Markdown files, the human approval gates, and the anti-drift rules.
+description: Use when running a software project through the Five-Bot workflow (Product, UX, Architect, Developer, QA), or whenever the /product, /ux, /architect, /dev, /qa, /5bot-init, /handoff, /gate, /5bot-status, or /5bot-archive commands are used. Defines each role's scope, the shared Markdown files, the human approval gates, and the anti-drift rules.
 ---
 
 # Five-Bot Workflow
@@ -114,3 +114,37 @@ Optional design-reference step at the UX stage. Lets `/ux` optionally capture a 
 - Zip extraction and asset loading are local file I/O only; no external service integrations.
 - Import-method values: `fallback-zip` (MVP) or `fallback-url-only` (URL without zip). `connector` is reserved for the deferred `claude_design` MCP enhancement (T15, post-MVP, gated on OQ-6).
 - If the linked artifact is missing or stale, fall back to `ux.md` text spec; never block.
+
+## Lean Context (v2.3.0)
+
+Keeps context flat as a project grows: bots read only the live slice, and stale history is **relocated (never deleted)** to `archive.md`, off the default read path.
+
+**Anchored / section reads (default for every bot).** Read only the live slice, never whole files: the **active ticket block** in `dev-qa.md`, the **current version section** in `product`/`ux`/`architecture.md`, the **newest** `decisions.md` block(s). Open `archive.md` only when you genuinely need history. No per-ticket/per-version sub-files — use offset/grep + the pointer lines.
+
+**`archive.md` schema** (one file, append-only, never loaded on normal turns):
+```
+# Archive — relocated history. Not loaded by default; never summarized.
+# Open a section only when you need history.
+
+## Stage history
+<superseded product/ux/architecture version sections, labeled by version>
+
+## Decisions
+<decision blocks older than the newest 8>
+
+## Dev-QA
+<full records of tickets that are DONE and whose version has shipped>
+```
+
+**Rollover rules** (deterministic + conservative; "current version" from `project-state.md`):
+- **Stage files** (product/ux/architecture): keep only the current version's section; move older version sections → `archive.md` § Stage history.
+- **decisions.md:** keep the newest **8** blocks; move older → § Decisions.
+- **dev-qa.md:** when a ticket is **DONE and its version has shipped**, move its full record (card + Developer Notes + QA Review) → § Dev-QA. Keep active/open tickets.
+- Always **relocate, never delete or summarize**. `archive.md` is created lazily on first rollover.
+- After moving content, ensure the trimmed file carries a one-line pointer, e.g. `_Older decisions → archive.md § Decisions._`
+
+**Triggers:**
+- **`/handoff`** runs the rollover incrementally at each stage seam, and prints a one-line note when anything moved (never silent).
+- **`/5bot-archive`** runs the same rules as a one-time retroactive sweep for an already-bloated project; idempotent.
+
+**Guardrail:** erring toward keeping is free — the archive is one read away. Never archive an active/open ticket or the current version's sections.

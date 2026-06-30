@@ -1,6 +1,6 @@
 {
   "name": "5bot",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "A disciplined Product -> UX -> Architect -> Developer -> QA workflow. Each role is a slash command that reads shared Markdown state, produces one artifact, and stops at human approval gates.",
   "author": {
     "name": "Chad Lawson"

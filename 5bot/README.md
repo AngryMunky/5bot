@@ -1,4 +1,4 @@
-# The 5bot Framework (v2.2.0)
+# The 5bot Framework (v2.3.0)
 
 A disciplined way to take a software idea from rough concept to tested implementation using a small team of single-purpose AI roles, with a human as the final decision-maker. The whole system runs on plain Markdown files, so it is portable across tools and easy to read, edit, and version-control.
 
@@ -143,7 +143,7 @@ Five "bots" run in sequence, each doing exactly one job: a **Product Bot** defin
 
 ---
 
-## The nine slash commands
+## The ten slash commands
 
 | Command | Bot | Job | Reads | Produces |
 |---------|-----|-----|-------|----------|
@@ -156,6 +156,7 @@ Five "bots" run in sequence, each doing exactly one job: a **Product Bot** defin
 | `/handoff` | Bookkeeper | Update state files after each stage: what changed, what's next, active ticket | Current stage files | `handoff.md` (transient), `project-state.md`, `decisions.md` |
 | `/gate` | Human | Review stage summary; approve, request changes, or reject. Record decision. | `project-state.md`, `handoff.md`, relevant artifacts | `decisions.md` (approval block), `project-state.md` (new stage) |
 | `/5bot-status` | — | Read-only re-orientation snapshot: stage, active ticket, last decision, and the one next command. Run it after `/compact`, a fresh session, or time away | `project-state.md`, `decisions.md`, `handoff.md` | Nothing (read-only) |
+| `/5bot-archive` | — | One-time sweep that relocates stale history (old version sections, decisions, shipped tickets) to `archive.md` (Lean Context); idempotent, non-destructive | working files | `archive.md` (relocated history) |
 
 **Workflow pattern:**
 1. Run a bot command (e.g., `/product "build a todo app"`)
@@ -313,6 +314,9 @@ This framework is shaped for software development, but the skeleton — **Define
 ---
 
 ## Recent improvements
+
+**v2.3.0 — Lean Context (automatic archive rollover)**
+- **Context stays flat as projects grow:** `/handoff` auto-relocates stale history (superseded version sections, decisions beyond the newest 8, shipped tickets) to `archive.md` — off the default read path — and bots read only the live slice. Non-destructive (relocate, never delete; git-recoverable). New `/5bot-archive` migrates an existing project in one pass; `/5bot-status` notes when an archive exists.
 
 **v2.2.0 — Git sync-awareness in `/5bot-status` (optional)**
 - **Know if your local copy is current:** `/5bot-status` shows a read-only git line — branch · ahead/behind vs upstream (as of last fetch) · clean/uncommitted — so you catch a stale checkout or unsaved work before acting. Read-only; never fetches or mutates; silent when not a git repo.

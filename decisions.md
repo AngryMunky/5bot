@@ -2,6 +2,36 @@
 
 <!-- Decisions and human-gate approvals. Newest on top. -->
 
+## Approval: QA Gate — v2.3.0 Lean Context (T1–T4)
+
+- Date / By / Stage: 2026-06-29 / Human / QA Gate
+- Status: APPROVED
+- Decision: v2.3.0 Lean Context (T1–T4) ACCEPTED. Cleared for release as v2.3.0.
+- Notes carried: rollover relies on version-labeled section headers (add a README line); runtime verify at staging, incl. a dogfood `/5bot-archive` on this project.
+- Release (T5): README + roster (`/5bot-archive`), bump `plugin.json` + `marketplace.json` 2.2.0→2.3.0, root `CLAUDE.md` + MEMORY, dual-push to both repos, tag `v2.3.0` (per `PUBLISH.md`). **Push to public + `main` requires explicit human authorization** (not implied by this gate).
+
+## Approval: UX Gate — v2.3.0 Lean Context
+
+- Date / By / Stage: 2026-06-29 / Human / UX Gate
+- Status: APPROVED
+- Decision: Lean Context UX approved — visible surfaces L1–L5 (single sectioned `archive.md`; per-file pointer lines; `/handoff` rollover note [auto but **never silent**]; idempotent `/5bot-archive`; `/5bot-status` archive note). Lazy loading invisible-by-design. Non-destructive throughout.
+- UX recs adopted: OQ-6 auto-rollover + announce (no y/n prompt); OQ-7 no `--dry-run` for MVP.
+- Architect gate: **skipped** (2-gate default; small, clear feature) — Architect resolves OQ-3 (lazy-read mechanism) inline, then Dev.
+- Consequences: Architect spec + tickets → Dev → QA → QA gate → release v2.3.0.
+
+## Approval: Product Gate — v2.3.0 Lean Context (lazy loading + archive rollover)
+
+- Date / By / Stage: 2026-06-29 / Human / Product Gate
+- Status: APPROVED
+- Decision: v2.3.0 **Lean Context** approved — combine **#3 lazy/section loading** + **#1 archive rollover**. **Idea #2 (per-file budgets + summarize) EXCLUDED** (lossy / high-upkeep). Non-destructive (relocate, never delete), mostly automatic (rollover on `/handoff`); `project-state.md` stays canon.
+- OQ-1: RESOLVED — APPROVED. Lazy loading (#3): confirmed.
+- Product recommendations for the remaining OQs (carried to UX/Architect; human invited tweaks):
+  - **OQ-2 (archive shape):** a **single `archive.md`**, off the default read path, sectioned (Stage history / Decisions / Dev-QA). Lowest file-count + upkeep; size is "free" since it's never loaded unless asked. (Alt: per-kind `decisions-archive.md` / `dev-qa-archive.md` / `history.md`.)
+  - **OQ-4 (rollover thresholds):** conservative + deterministic — stage files keep only the *current* version section; `decisions.md` keeps the last ~8 blocks; `dev-qa.md` archives a ticket's full record once it is DONE and its version has shipped. Runs at `/handoff` + a sweep at release.
+  - **OQ-5 (migration):** **include a one-time `/5bot-archive` command in MVP** — applies the rollover rules retroactively (idempotent, non-destructive); needed because every existing project (incl. this one) is already bloated; reuses the same logic.
+- OQ-3 (lazy-read mechanism — file-split vs anchored/offset reads) → Architect.
+- Consequences: proceed to `/ux`.
+
 ## Approval: QA Gate — v2.2.0 T2 git-awareness line
 
 - Date / By / Stage: 2026-06-29 / Human / QA Gate

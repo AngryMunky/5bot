@@ -11,7 +11,7 @@ Read `project-state.md` (canon), the newest block of `decisions.md`, and `handof
 - **Last decision:** the single newest `decisions.md` block — heading, STATUS, date/by, one-line gist. One entry only.
 - **Open questions:** only items still OPEN; collapse resolved into a count (`(N resolved — see project-state.md)`); `None open.` if none.
 - **→ Recommended next command:** exactly ONE, arrow-prefixed, with a short reason. Derive from `handoff.md`'s next-step line cross-checked against the canon stage/gate, using the skill's verdict / next-command map. If a gate is pending, recommend `/gate`; if a gate was approved with a next role, recommend that role's command.
-- **Freshness footer:** `State last updated <date> / <by>.` then `Canon is on disk (project-state.md · decisions.md · handoff.md · stage files) — safe to /compact.` Then, **if this project is a git repo**, append one read-only **git line** as the final footer line (see "Git line" below); omit it silently when not a git repo or git is unavailable.
+- **Freshness footer:** `State last updated <date> / <by>.` then `Canon is on disk (project-state.md · decisions.md · handoff.md · stage files) — safe to /compact.` Then, **if this project is a git repo**, append one read-only **git line** as the final footer line (see "Git line" below); omit it silently when not a git repo or git is unavailable. Then, **if `archive.md` exists**, append one muted line — `Archive: archive.md present — history off the read path.` — omit it when there is no archive.
 
 Keep it to ~10 lines. Do NOT print Known Risks. Do NOT recommend more than one command.
 

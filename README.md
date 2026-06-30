@@ -1,6 +1,6 @@
 # 5bot - Disciplined AI Software Development Workflow
 
-**Version 2.2.0** | [Full documentation](5bot/README.md)
+**Version 2.3.0** | [Full documentation](5bot/README.md)
 
 A Claude Code plugin that brings structure and discipline to software development using five single-purpose AI roles with human approval gates. The whole system runs on plain Markdown, so it's portable, version-control friendly, and easy to audit.
 
@@ -43,7 +43,7 @@ Each role (Product Bot, UX Bot, Architect Bot, Developer Bot, QA Bot) is a slash
 - Repeat `/dev` / `/qa` for each ticket
 - `/gate` — human final approval and release
 
-## The nine commands
+## The ten commands
 
 | Command | Does |
 |---------|------|
@@ -56,6 +56,7 @@ Each role (Product Bot, UX Bot, Architect Bot, Developer Bot, QA Bot) is a slash
 | `/handoff` | Update state files after each stage |
 | `/gate` | Human review and approval |
 | `/5bot-status` | Read-only snapshot to re-orient after `/compact` or a fresh session |
+| `/5bot-archive` | One-time sweep that relocates old history to `archive.md` (Lean Context) |
 
 ## Workflow diagram
 
@@ -85,6 +86,9 @@ All project state lives in seven Markdown files (git-friendly, versionable):
 - **Teams fighting scope creep** and wanting to prevent silent decisions
 
 ## Key features
+
+✨ **v2.3.0 — Lean Context:**
+- 🗂 Context stays lean as projects grow: `/handoff` auto-relocates stale history (old version sections, decisions, shipped tickets) to `archive.md` — off the read path — and bots read only the live slice. Non-destructive (relocate, never delete); one-time `/5bot-archive` migrates existing projects.
 
 ✨ **v2.2.0 — Git sync-awareness:**
 - 🔭 `/5bot-status` shows a read-only git line (branch · behind/ahead vs origin · clean/uncommitted) so you spot a stale local copy before building on it. Read-only, no network, no mutation; silent when there's no git.
@@ -119,4 +123,4 @@ See [`5bot/README.md`](5bot/README.md) for:
 
 ---
 
-*Built on Markdown so it outlives any single tool. v2.2.0*
+*Built on Markdown so it outlives any single tool. v2.3.0*

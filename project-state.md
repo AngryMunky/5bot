@@ -1,4 +1,4 @@
-# Project State (v2.2.0)
+# Project State (v2.3.0)
 
 > Canon. Every bot reads this first. Keep it short — detail lives in the stage files.
 
@@ -16,7 +16,7 @@ Individual developers and small teams (1–10 people) using Claude Code. Indie h
 
 ## Current Active Ticket
 
-**Released v2.2.0.** Git-awareness line (read-only git status in `/5bot-status`) shipped — synced to the publish clone, `plugin.json` + `marketplace.json` bumped to 2.2.0, committed, **dual-pushed to both repos** (private `5bot-plugin` + public `5bot`), tagged `v2.2.0`. T2 done. Recommended: staging smoke test of the git line across surfaces (Code/Cowork). Open follow-ups: T4 (v1.2.2 backlog), T5 (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
+**Released v2.3.0.** Lean Context shipped — automatic archive rollover (`/handoff`), anchored/section reads, new `/5bot-archive`, `/5bot-status` archive note. Dual-pushed to both repos, tagged `v2.3.0`. Recommended: dogfood `/5bot-archive` on this project + a staging smoke test of the rollover. (Prior: v2.2.0 live on both repos.) Open follow-ups: T4-legacy (v1.2.2 backlog), T5-legacy (gate-enforcement research), `task_2dbc68f5` (qa.md Test Plan fix).
 
 (Prior: **Architect gate APPROVED** 2026-06-26. **UX gate APPROVED** 2026-06-26. **Product gate APPROVED (revised scope)** 2026-06-26.)
 
@@ -83,4 +83,4 @@ See `product.md` for mitigation strategies.
 
 ## Last Updated / By
 
-2026-06-29 / Released v2.2.0 — git-awareness line shipped; dual-pushed to both repos + tagged.
+2026-06-29 / Released v2.3.0 (Lean Context); dual-pushed to both repos + tagged.
